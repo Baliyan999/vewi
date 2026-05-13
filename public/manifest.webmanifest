@@ -1,12 +1,12 @@
 {
-  "name": "VEWI · Wedding OS",
-  "short_name": "VEWI",
-  "description": "Цифровой одноразовый фотоаппарат для вашей свадьбы.",
+  "name": "QR-Фотограф",
+  "short_name": "QR-Фото",
+  "description": "Гостевая камера на свадьбе — сканируй QR и присылай фото",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#131313",
-  "theme_color": "#131313",
+  "background_color": "#fdfaf3",
+  "theme_color": "#fdfaf3",
   "icons": [
     {
       "src": "/icon-192.png",

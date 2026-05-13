@@ -1,227 +1,124 @@
 @import "tailwindcss";
-
-/*
- * VEWI Wedding OS — Premium dual-theme design tokens.
- *
- * Light surface = marketing (lendinge). Dark surface = guest & couple app.
- * Sharp 0.25rem corners, 0.5px borders, no shadows, EB Garamond + Inter,
- * Film-Strip divider for section separation.
- */
+@plugin "tailwindcss-animate";
 
 @theme {
-  /* Marketing/light defaults (override on app body) */
-  --color-background: #FDF8F7;
-  --color-surface: #FDF8F7;
-  --color-surface-container: #F1EDEC;
-  --color-surface-container-low: #F7F3F1;
-  --color-on-surface: #1c1b1b;
-  --color-on-surface-variant: #4A463F;
-  --color-outline: #7b776e;
-  --color-outline-variant: #CCC6BC;
-  --color-accent-gold: #765A12;
-  --color-primary: #1c1b1b;
-  --color-primary-foreground: #FDF8F7;
+  /* Warm ivory base, dusty rose-gold accents */
+  --color-background: oklch(98.5% 0.012 80);
+  --color-foreground: oklch(22% 0.03 50);
+  --color-muted: oklch(95.5% 0.015 75);
+  --color-muted-foreground: oklch(45% 0.025 50);
+  --color-primary: oklch(58% 0.09 35);
+  --color-primary-foreground: oklch(99% 0.005 80);
+  --color-accent: oklch(88% 0.045 70);
+  --color-accent-foreground: oklch(25% 0.04 35);
+  --color-rose: oklch(82% 0.06 20);
+  --color-champagne: oklch(90% 0.05 85);
+  --color-border: oklch(91% 0.015 70);
+  --color-ring: oklch(60% 0.1 35);
 
-  /* Aliases for older code paths still expecting these names */
-  --color-foreground: #1c1b1b;
-  --color-muted: #F1EDEC;
-  --color-muted-foreground: #4A463F;
-  --color-border: #CCC6BC;
-  --color-ring: #765A12;
-  --color-rose: #efe5d8;
-  --color-champagne: #ede5cd;
-  --color-accent: #ede5cd;
-  --color-accent-foreground: #1c1b1b;
+  --font-display: var(--font-cormorant), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  --font-display: var(--font-eb-garamond), "EB Garamond", ui-serif, Georgia, serif;
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
 
-  --radius-sm: 4px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-
-  --shadow-soft: none;
-  --shadow-glow: none;
-
-  --space-unit: 4px;
-  --space-gutter: 24px;
-  --space-margin-mobile: 20px;
-  --space-margin-desktop: 80px;
-  --space-section: 6rem;
-}
-
-/* Dark surface — applied via `data-surface="dark"` on body / route container */
-[data-surface="dark"] {
-  --color-background: #131313;
-  --color-surface: #131313;
-  --color-surface-container: #201f1f;
-  --color-surface-container-low: #1c1b1b;
-  --color-on-surface: #e5e2e1;
-  --color-on-surface-variant: #c9c6bf;
-  --color-outline: #928f8a;
-  --color-outline-variant: #4a4640;
-  --color-accent-gold: #b8974a;
-  --color-primary: #e5e2e1;
-  --color-primary-foreground: #131313;
-
-  --color-foreground: #e5e2e1;
-  --color-muted: #201f1f;
-  --color-muted-foreground: #c9c6bf;
-  --color-border: #4a4640;
-  --color-ring: #b8974a;
-  --color-rose: rgba(184, 151, 74, 0.1);
-  --color-champagne: rgba(184, 151, 74, 0.06);
-  --color-accent: #201f1f;
-  --color-accent-foreground: #e5e2e1;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -8px rgb(180 130 100 / 0.18);
+  --shadow-glow: 0 0 0 1px rgb(255 255 255 / 0.4), 0 24px 60px -20px rgb(180 130 100 / 0.45);
 }
 
 @layer base {
-  * { border-color: var(--color-outline-variant); }
+  * { border-color: var(--color-border); }
 
-  html {
-    scroll-behavior: smooth;
-    text-size-adjust: 100%;
-  }
+  html { scroll-behavior: smooth; }
 
   html, body {
     background: var(--color-background);
-    color: var(--color-on-surface-variant);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-weight: 400;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse 1200px 600px at 10% -10%, oklch(90% 0.05 25 / 0.35), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 100% 20%, oklch(90% 0.05 80 / 0.35), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  /* Subtle paper grain — tactile richness without distraction */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0 0.1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
   }
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    font-weight: 300;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-    color: var(--color-on-surface);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
   }
 
   ::selection {
-    background: var(--color-accent-gold);
-    color: var(--color-surface);
+    background: oklch(85% 0.06 30);
+    color: oklch(20% 0.04 35);
   }
-
-  /* Hide scrollbars in app surfaces for a clean editorial feel */
-  [data-surface="dark"] ::-webkit-scrollbar { display: none; }
-  [data-surface="dark"] { -ms-overflow-style: none; scrollbar-width: none; }
 }
-
-/* ---- Utilities ---------------------------------------------------------- */
 
 @utility container-page {
   width: 100%;
   margin-inline: auto;
-  max-width: 120rem;
-  padding-inline: var(--space-margin-mobile);
-
-  @media (min-width: 768px) {
-    padding-inline: var(--space-margin-desktop);
-  }
+  max-width: 120rem; /* 1920px */
+  padding-inline: 1.25rem;
+  @media (min-width: 1280px) { padding-inline: 2.5rem; }
+  @media (min-width: 1920px) { padding-inline: 4rem; }
 }
 
-@utility label-caps {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  line-height: 1.2;
-  letter-spacing: 0.15em;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-@utility text-display-lg {
-  font-family: var(--font-display);
-  font-size: 48px;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  font-weight: 300;
-}
-
-@utility text-display-md {
-  font-family: var(--font-display);
-  font-size: 36px;
-  line-height: 1.1;
-  font-weight: 300;
-}
-
-@utility text-headline-md {
-  font-family: var(--font-display);
-  font-size: 32px;
-  line-height: 1.2;
-  font-weight: 300;
-}
-
-@utility text-headline-sm {
-  font-family: var(--font-display);
-  font-size: 24px;
-  line-height: 1.2;
-  font-weight: 300;
-}
-
-@utility text-body-lg {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
-  font-weight: 300;
-}
-
-@utility text-body-md {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 400;
-}
-
-@utility border-hair {
-  border-width: 0.5px;
-}
-
-@utility border-b-hair {
-  border-bottom-width: 0.5px;
-}
-
-@utility border-t-hair {
-  border-top-width: 0.5px;
-}
-
-/* The signature VEWI film strip divider — 0.5px line punctuated by background-color gaps */
-@utility film-strip {
-  height: 1px;
-  width: 100%;
-  background-color: var(--color-outline-variant);
-  background-image: repeating-linear-gradient(
-    to right,
-    transparent 0,
-    transparent 8px,
-    var(--color-background) 8px,
-    var(--color-background) 12px
-  );
-  background-size: 100% 1px;
-  background-repeat: no-repeat;
-  background-position: center;
+@utility text-gradient-gold {
+  background: linear-gradient(120deg, oklch(50% 0.1 35), oklch(70% 0.08 50), oklch(55% 0.09 30));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 @utility surface-card {
-  background: var(--color-surface);
-  border: 0.5px solid var(--color-outline-variant);
+  background:
+    linear-gradient(180deg, oklch(100% 0 0 / 0.9), oklch(100% 0 0 / 0.6)),
+    var(--color-background);
+  backdrop-filter: blur(8px);
+  border: 1px solid oklch(95% 0.015 70);
+  box-shadow: var(--shadow-soft);
 }
 
-/* Subtle motion utilities */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(8px, -10px) rotate(2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 oklch(58% 0.09 35 / 0.45); }
+  100% { box-shadow: 0 0 0 24px oklch(58% 0.09 35 / 0); }
 }
-@utility animate-pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+@utility animate-float { animation: float-y 6s ease-in-out infinite; }
+@utility animate-drift { animation: drift 12s ease-in-out infinite; }
+@utility animate-pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

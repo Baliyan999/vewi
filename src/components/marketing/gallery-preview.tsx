@@ -2,20 +2,32 @@
 
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import { useRef } from "react";
-import { FilmStrip } from "@/components/ui/film-strip";
+import { Reveal } from "./reveal";
+import { FloatingOrnaments } from "./parallax";
 
 /**
- * Editorial mosaic preview. Decorative tiles drift on scroll for parallax.
- * Real wedding imagery would replace the gradient placeholders.
+ * Decorative photo mosaic with parallax-drifting tiles + a back layer that
+ * drifts at higher speed for depth.
  */
 const TILES = [
-  { hue: 35, x: 5, y: 10, w: 24, h: 280, drift: -50 },
-  { hue: 60, x: 32, y: 4, w: 22, h: 220, drift: -90 },
-  { hue: 25, x: 56, y: 12, w: 26, h: 320, drift: -65 },
-  { hue: 70, x: 8, y: 50, w: 28, h: 240, drift: 70 },
-  { hue: 45, x: 38, y: 46, w: 22, h: 200, drift: 100 },
-  { hue: 30, x: 62, y: 52, w: 24, h: 260, drift: 50 },
+  { ar: "3/4", hue: 25, x: 5, y: 10, w: 22, drift: -55 },
+  { ar: "1/1", hue: 70, x: 30, y: 4, w: 24, drift: -110 },
+  { ar: "4/5", hue: 45, x: 58, y: 12, w: 22, drift: -70 },
+  { ar: "1/1", hue: 30, x: 82, y: 6, w: 18, drift: -140 },
+  { ar: "4/3", hue: 55, x: 8, y: 52, w: 26, drift: 70 },
+  { ar: "3/4", hue: 20, x: 38, y: 48, w: 22, drift: 120 },
+  { ar: "1/1", hue: 80, x: 64, y: 58, w: 20, drift: 45 },
+  { ar: "4/5", hue: 35, x: 86, y: 50, w: 14, drift: 90 },
 ] as const;
+
+const BACK_TILES = [
+  { hue: 70, x: 12, y: 30, w: 16, drift: -200 },
+  { hue: 30, x: 70, y: 20, w: 18, drift: -240 },
+  { hue: 55, x: 48, y: 76, w: 14, drift: 220 },
+  { hue: 25, x: 88, y: 40, w: 12, drift: 180 },
+] as const;
+
+const ICON_TYPES = ["💍", "🥂", "💐", "💌", "💃", "📸", "🌸", "✨"] as const;
 
 export function GalleryPreview() {
   const ref = useRef<HTMLElement>(null);
@@ -25,62 +37,113 @@ export function GalleryPreview() {
     offset: ["start end", "end start"],
   });
 
+  const titleY = useTransform(scrollYProgress, [0, 1], ["35%", "-25%"]);
+  const sceneScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.97]);
+
   return (
-    <>
-      <div className="container-page">
-        <FilmStrip />
+    <section
+      ref={ref}
+      className="relative overflow-hidden py-24 md:py-32"
+      style={{
+        background:
+          "linear-gradient(180deg, oklch(98% 0.012 80) 0%, oklch(95% 0.025 70) 100%)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-50 blur-sm">
+        {BACK_TILES.map((tile, i) => (
+          <BackTile key={i} progress={scrollYProgress} tile={tile} reduce={reduce ?? false} />
+        ))}
       </div>
 
-      <section
-        ref={ref}
-        className="px-(--space-margin-mobile) md:px-(--space-margin-desktop) py-(--space-section) bg-[color:var(--color-surface-container)]/30"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.7 }}
-          className="text-center max-w-xl mx-auto mb-16"
-        >
-          <h2 className="text-headline-md text-[color:var(--color-on-surface)] mb-4">
-            Альбом, который собирает себя сам
-          </h2>
-          <p className="text-body-md">
-            Каждый кадр от каждого гостя — в едином кураторском архиве. Вы получаете
-            всё, что увидели глаза вашей свадьбы.
-          </p>
+      <FloatingOrnaments count={16} hueBase={30} />
+
+      <div className="container-page relative">
+        <motion.div style={{ y: reduce ? 0 : titleY }}>
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-(--color-primary)">
+              ⋄ ⋄ ⋄
+            </p>
+            <h2 className="mb-4 text-4xl md:text-5xl">
+              Альбом, который собирает себя сам
+            </h2>
+            <p className="text-(--color-muted-foreground)">
+              Пока гости танцуют — кадры от всех столов уже летят в ваш единый альбом.
+              Вы получаете полный архив, ничего не теряется в десятках чатов.
+            </p>
+          </Reveal>
         </motion.div>
 
-        <div className="relative h-[500px] max-w-5xl mx-auto hidden md:block">
+        <motion.div
+          style={{ scale: reduce ? 1 : sceneScale }}
+          className="relative mx-auto h-[560px] max-w-5xl"
+        >
           {TILES.map((tile, i) => (
-            <Tile key={i} progress={scrollYProgress} tile={tile} reduce={reduce ?? false} />
-          ))}
-        </div>
-
-        {/* Mobile: simple film-strip stack */}
-        <div className="md:hidden grid grid-cols-2 gap-2">
-          {TILES.slice(0, 4).map((t, i) => (
-            <div
+            <ParallaxTile
               key={i}
-              className="border-[0.5px] border-[color:var(--color-outline-variant)] aspect-[3/4]"
-              style={{
-                background: `linear-gradient(135deg, oklch(94% 0.05 ${t.hue}), oklch(78% 0.09 ${t.hue + 12}))`,
-              }}
+              progress={scrollYProgress}
+              tile={tile}
+              emoji={ICON_TYPES[i]}
+              reduce={reduce ?? false}
             />
           ))}
-        </div>
-      </section>
-    </>
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
-function Tile({
+function ParallaxTile({
+  progress,
+  tile,
+  emoji,
+  reduce,
+}: {
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+  tile: (typeof TILES)[number];
+  emoji: string;
+  reduce: boolean;
+}) {
+  const y = useTransform(progress, [0, 1], [0, tile.drift]);
+  const rotate = useTransform(progress, [0, 1], [-2, 2]);
+  return (
+    <motion.div
+      style={{
+        y: reduce ? 0 : y,
+        rotate: reduce ? 0 : rotate,
+        left: `${tile.x}%`,
+        top: `${tile.y}%`,
+        width: `${tile.w}%`,
+        aspectRatio: tile.ar,
+      }}
+      className="absolute"
+    >
+      <motion.div
+        whileHover={{ scale: 1.06, rotate: -2, zIndex: 30 }}
+        transition={{ type: "spring", stiffness: 250, damping: 18 }}
+        className="relative h-full w-full overflow-hidden rounded-(--radius-md) shadow-(--shadow-soft)"
+        style={{
+          background: `linear-gradient(135deg,
+            oklch(94% 0.05 ${tile.hue}) 0%,
+            oklch(82% 0.08 ${tile.hue + 10}) 100%)`,
+          border: "1px solid oklch(95% 0.015 70)",
+        }}
+      >
+        <div className="absolute inset-0 grid place-items-center text-4xl opacity-70 mix-blend-multiply">
+          {emoji}
+        </div>
+        <div className="absolute inset-x-2 bottom-2 h-3 rounded-sm bg-white/40 backdrop-blur" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function BackTile({
   progress,
   tile,
   reduce,
 }: {
   progress: ReturnType<typeof useScroll>["scrollYProgress"];
-  tile: (typeof TILES)[number];
+  tile: (typeof BACK_TILES)[number];
   reduce: boolean;
 }) {
   const y = useTransform(progress, [0, 1], [0, tile.drift]);
@@ -91,10 +154,10 @@ function Tile({
         left: `${tile.x}%`,
         top: `${tile.y}%`,
         width: `${tile.w}%`,
-        height: tile.h,
-        background: `linear-gradient(135deg, oklch(94% 0.05 ${tile.hue}), oklch(78% 0.09 ${tile.hue + 12}))`,
+        aspectRatio: "1/1",
+        background: `linear-gradient(135deg, oklch(92% 0.05 ${tile.hue}), oklch(75% 0.09 ${tile.hue + 8}))`,
       }}
-      className="absolute border-[0.5px] border-[color:var(--color-outline-variant)]"
+      className="absolute rounded-(--radius-md)"
     />
   );
 }

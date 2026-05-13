@@ -3,135 +3,156 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
+import { Images, Palette, Settings, LogOut, Sparkles, ArrowLeft } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
-import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
-/**
- * VEWI Premium dashboard shell.
- * Top: MENU · VEWI · ACCOUNT (hairline border, sticky)
- * Bottom (mobile): Dashboard · Gallery · Guest · Settings (Material Symbols)
- */
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("couple.nav");
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const isDemo = pathname.startsWith("/dashboard/demo");
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const homePath = isDemo ? "/dashboard/demo" : "/dashboard";
   const settingsPath = isDemo ? "/dashboard/demo/settings" : "/dashboard/settings";
 
-  const isLogin = pathname.endsWith("/dashboard/login");
-  if (isLogin) return <>{children}</>;
-
   const items = [
-    { href: homePath, label: t("albums"), icon: "dashboard" },
-    { href: `${homePath}#gallery`, label: "Gallery", icon: "auto_stories" },
-    { href: "/e/demo", label: "Guest", icon: "upload_file" },
-    { href: settingsPath, label: t("settings"), icon: "settings" },
+    { href: homePath, label: t("albums"), icon: Images },
+    { href: settingsPath, label: t("settings"), icon: Settings },
   ];
 
-  return (
-    <div className="min-h-dvh flex flex-col">
-      {/* Top app bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex justify-between items-center px-(--space-margin-mobile) bg-[color:var(--color-surface)]/95 backdrop-blur-sm border-b-[0.5px] border-[color:var(--color-outline-variant)]">
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="text-[color:var(--color-on-surface)] hover:text-[color:var(--color-accent-gold)] transition-colors"
-          aria-label="Menu"
-        >
-          <Icon name={menuOpen ? "close" : "menu"} size={24} />
-        </button>
-        <Link
-          href={homePath as "/dashboard"}
-          className="text-display-md tracking-tight text-[color:var(--color-on-surface)]"
-        >
-          VEWI
-        </Link>
-        <Link
-          href={settingsPath as "/dashboard/settings"}
-          className="text-[color:var(--color-on-surface)] hover:text-[color:var(--color-accent-gold)] transition-colors"
-          aria-label="Account"
-        >
-          <Icon name="account_circle" size={24} />
-        </Link>
-      </header>
+  const isLoginRoute = pathname.endsWith("/dashboard/login");
+  if (isLoginRoute) return <>{children}</>;
 
-      {/* Slide-down menu sheet */}
-      {menuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed top-16 left-0 right-0 z-40 border-b-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface)] py-6"
-        >
-          <nav className="container-page flex flex-col gap-4">
-            {items.map((it) => (
-              <Link
-                key={it.href}
-                href={it.href as "/dashboard"}
-                onClick={() => setMenuOpen(false)}
-                className="label-caps flex items-center gap-3 text-[color:var(--color-on-surface)] hover:text-[color:var(--color-accent-gold)]"
-              >
-                <Icon name={it.icon} size={20} />
-                {it.label}
-              </Link>
-            ))}
+  return (
+    <div className="relative min-h-dvh">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 900px 600px at 10% -10%, oklch(90% 0.05 25 / 0.4), transparent 60%), radial-gradient(ellipse 800px 600px at 95% 100%, oklch(90% 0.05 85 / 0.4), transparent 60%)",
+        }}
+      />
+
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={cn(
+          "sticky top-0 z-30 transition-[background-color,box-shadow,backdrop-filter] duration-300",
+          scrolled
+            ? "bg-white/75 backdrop-blur-md shadow-[0_1px_0_oklch(91%_0.015_70)]"
+            : "bg-transparent",
+        )}
+      >
+        <div className="container-page flex h-18 items-center justify-between py-4">
+          <Link
+            href="/"
+            className="group flex items-center gap-2.5 font-display text-lg md:text-xl"
+          >
+            <span aria-hidden className="text-2xl text-gradient-gold">⌘</span>
+            <span className="hidden sm:inline">QR-Фотограф</span>
+            <span className="ml-1 hidden text-xs uppercase tracking-[0.2em] text-(--color-muted-foreground) sm:inline">
+              · кабинет
+            </span>
+          </Link>
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {items.map((it) => {
+              const active = pathname === it.href;
+              const Icon = it.icon;
+              return (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  className={cn(
+                    "relative flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors",
+                    active
+                      ? "text-(--color-foreground)"
+                      : "text-(--color-muted-foreground) hover:text-(--color-foreground)",
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="navPill"
+                      transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                      className="absolute inset-0 -z-10 rounded-full bg-white shadow-(--shadow-soft)"
+                    />
+                  )}
+                  <Icon className="h-4 w-4" />
+                  {it.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2">
             {isDemo && (
-              <span className="label-caps text-[color:var(--color-accent-gold)] mt-2">
-                · Demo mode ·
+              <span className="hidden items-center gap-1.5 rounded-full bg-(--color-accent)/60 px-3 py-1.5 text-[10px] uppercase tracking-widest text-(--color-primary) sm:inline-flex">
+                <Sparkles className="h-3 w-3" /> {t("demo")}
               </span>
             )}
             {!isDemo && (
-              <form action="/api/auth/signout" method="post" className="mt-2">
+              <form action="/api/auth/signout" method="post">
                 <button
                   type="submit"
-                  className="label-caps flex items-center gap-3 text-[color:var(--color-on-surface-variant)] hover:text-[color:var(--color-accent-gold)]"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-(--color-border) bg-white/70 text-(--color-muted-foreground) backdrop-blur transition-colors hover:text-(--color-foreground)"
+                  aria-label={t("logout")}
                 >
-                  <Icon name="logout" size={20} /> {t("logout")}
+                  <LogOut className="h-4 w-4" />
                 </button>
               </form>
             )}
-          </nav>
-        </motion.div>
-      )}
+          </div>
+        </div>
+      </motion.header>
 
-      {/* Main content */}
-      <main className="flex-1 pt-16 pb-24 md:pb-16">{children}</main>
-
-      {/* Bottom nav (mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex justify-around items-center h-20 px-(--space-margin-mobile) bg-[color:var(--color-surface)] border-t-[0.5px] border-[color:var(--color-outline-variant)]">
+      <nav className="container-page flex gap-2 overflow-x-auto pb-2 pt-2 md:hidden">
         {items.map((it) => {
-          const active =
-            pathname === it.href ||
-            (it.href.includes("#") && pathname === it.href.split("#")[0]);
+          const active = pathname === it.href;
+          const Icon = it.icon;
           return (
             <Link
               key={it.href}
-              href={it.href as "/dashboard"}
+              href={it.href}
               className={cn(
-                "flex flex-col items-center justify-center pt-2 w-full h-full transition-colors active:scale-95",
+                "flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-xs",
                 active
-                  ? "text-[color:var(--color-accent-gold)] border-t-[0.5px] border-[color:var(--color-accent-gold)]"
-                  : "text-[color:var(--color-on-surface-variant)] hover:text-[color:var(--color-accent-gold)]",
+                  ? "border-transparent bg-white shadow-(--shadow-soft) text-(--color-foreground)"
+                  : "border-(--color-border) bg-white/60 text-(--color-muted-foreground)",
               )}
             >
-              <Icon
-                name={it.icon}
-                size={22}
-                fill={active ? 1 : 0}
-                weight={active ? 400 : 300}
-                className="mb-1"
-              />
-              <span className="label-caps text-[10px]">{it.label}</span>
+              <Icon className="h-3.5 w-3.5" />
+              {it.label}
             </Link>
           );
         })}
       </nav>
+
+      {pathname.includes("/event/") && (
+        <div className="container-page pt-2">
+          <Link
+            href={homePath as "/dashboard"}
+            className="inline-flex items-center gap-1.5 text-xs text-(--color-muted-foreground) hover:text-(--color-foreground)"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> ко всем событиям
+          </Link>
+        </div>
+      )}
+
+      <main>{children}</main>
     </div>
   );
 }
 
-// Legacy export kept for one stray import
 export function dashboardIconColor() {
-  return null;
+  return Palette;
 }

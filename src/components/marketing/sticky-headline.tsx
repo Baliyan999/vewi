@@ -1,15 +1,20 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "motion/react";
+import { FloatingOrnaments } from "./parallax";
 
-const PHRASES = ["Every frame.", "From every guest.", "In one album."] as const;
+const PHRASES = [
+  "Каждый кадр",
+  "от каждого гостя",
+  "в одном альбоме",
+] as const;
 
-/**
- * Tall pinned section. As you scroll, three editorial statements cross-fade
- * with a soft scale shift. Replaces the rich Stitch hero language patterns
- * in the demo (Дмитрий, Stitch-y phrases) with VEWI's English-first cadence.
- */
 export function StickyHeadline() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
@@ -18,10 +23,24 @@ export function StickyHeadline() {
     offset: ["start start", "end end"],
   });
 
+  const orbY = useTransform(scrollYProgress, [0, 1], ["-10%", "20%"]);
+
   return (
     <section ref={ref} className="relative" style={{ height: "260vh" }}>
       <div className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden">
-        <div className="container-page text-center">
+        <motion.div
+          aria-hidden
+          style={{ y: reduce ? 0 : orbY }}
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute -left-32 top-1/3 h-[440px] w-[440px] rounded-full bg-(--color-rose)/30 blur-3xl" />
+          <div className="absolute -right-24 top-1/4 h-[420px] w-[420px] rounded-full bg-(--color-champagne)/40 blur-3xl" />
+          <div className="absolute left-1/2 bottom-0 h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-(--color-accent)/30 blur-3xl" />
+        </motion.div>
+
+        <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
+
+        <div className="container-page relative text-center">
           {PHRASES.map((phrase, i) => (
             <Phrase
               key={i}
@@ -36,11 +55,11 @@ export function StickyHeadline() {
 
           <motion.div
             style={{
-              opacity: useTransform(scrollYProgress, [0, 0.04, 0.96, 1], [0, 1, 1, 0]),
+              opacity: useTransform(scrollYProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]),
             }}
-            className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 label-caps text-[color:var(--color-on-surface-variant)]"
+            className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-(--color-muted-foreground)"
           >
-            ↓  Scroll  ↓
+            ⌄  пролистайте  ⌄
           </motion.div>
         </div>
       </div>
@@ -68,22 +87,38 @@ function Phrase({
 
   const opacity = useTransform(
     progress,
-    [start, start + span * 0.18, end - span * 0.18, end],
+    [start, start + span * 0.2, end - span * 0.2, end],
     [0, 1, 1, 0],
   );
-  const scale = useTransform(progress, [start, mid, end], [0.95, 1, 1.04]);
-  const y = useTransform(progress, [start, mid, end], [20, 0, -20]);
+  const scale = useTransform(progress, [start, mid, end], [0.92, 1, 1.06]);
+  const blur = useTransform(
+    progress,
+    [start, start + span * 0.25, end - span * 0.25, end],
+    ["8px", "0px", "0px", "8px"],
+  );
+  const y = useTransform(progress, [start, mid, end], [30, 0, -30]);
+
+  const words = children.split(" ");
 
   return (
     <motion.h2
       style={{
         opacity: reduce ? (index === 1 ? 1 : 0) : opacity,
         scale: reduce ? 1 : scale,
+        filter: reduce ? undefined : (blur as unknown as string),
         y: reduce ? 0 : y,
       }}
-      className="absolute inset-x-0 mx-auto text-display-md md:text-display-lg leading-[1.05] text-[color:var(--color-on-surface)] tracking-tight"
+      className="absolute inset-x-0 mx-auto font-display text-5xl leading-[1.05] md:text-7xl lg:text-8xl"
     >
-      <span className="italic font-light">{children}</span>
+      {words.map((w, i) => (
+        <span key={i} className="mr-[0.3em] inline-block">
+          {i === Math.floor(words.length / 2) ? (
+            <span className="text-gradient-gold italic">{w}</span>
+          ) : (
+            w
+          )}
+        </span>
+      ))}
     </motion.h2>
   );
 }

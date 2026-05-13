@@ -1,10 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * VEWI Premium card — flat, no shadow, 0.5px outline-variant border,
- * 0.25rem corner radius.
- */
 export function Card({
   className,
   ...props
@@ -12,7 +8,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "surface-card rounded-sm",
+        "rounded-(--radius-lg) border border-(--color-border) bg-(--color-background) shadow-sm",
         className,
       )}
       {...props}
@@ -25,10 +21,7 @@ export function CardHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={cn("flex flex-col gap-2 p-6", className)}
-      {...props}
-    />
+    <div className={cn("flex flex-col gap-1.5 p-6", className)} {...props} />
   );
 }
 
@@ -37,10 +30,7 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3
-      className={cn("text-headline-sm text-[color:var(--color-on-surface)]", className)}
-      {...props}
-    />
+    <h3 className={cn("text-xl font-semibold tracking-tight", className)} {...props} />
   );
 }
 
@@ -50,7 +40,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-body-md text-[color:var(--color-on-surface-variant)]", className)}
+      className={cn("text-sm text-(--color-muted-foreground)", className)}
       {...props}
     />
   );

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { FilmStrip } from "@/components/ui/film-strip";
+import { Reveal } from "./reveal";
+import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
 
 const ITEMS = [
   { value: 350, suffix: "+", label: "свадеб собрано" },
@@ -12,30 +13,47 @@ const ITEMS = [
 
 export function Stats() {
   return (
-    <>
-      <div className="container-page">
-        <FilmStrip />
-      </div>
-      <section className="px-(--space-margin-mobile) md:px-(--space-margin-desktop) py-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-(--space-gutter) max-w-5xl mx-auto">
-          {ITEMS.map((it, i) => (
-            <motion.div
-              key={it.label}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.7, delay: i * 0.1 }}
-              className="border-[0.5px] border-[color:var(--color-outline-variant)] p-8 flex flex-col gap-2 bg-[color:var(--color-surface)]"
+    <section className="relative overflow-hidden py-20 md:py-24">
+      <FloatingOrnaments count={14} />
+
+      <div className="container-page relative">
+        <Reveal className="mx-auto max-w-3xl">
+          <MouseTilt intensity={5}>
+            <div
+              className="surface-card relative overflow-hidden rounded-(--radius-xl) p-10 md:p-14"
+              style={{ transform: "translateZ(0)" }}
             >
-              <Counter to={it.value} suffix={it.suffix} />
-              <p className="label-caps text-[color:var(--color-on-surface-variant)]">
-                {it.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-    </>
+              <ParallaxY strength={0.18}>
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-(--color-champagne)/50 blur-3xl"
+                />
+              </ParallaxY>
+              <ParallaxY strength={-0.22}>
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-(--color-rose)/40 blur-3xl"
+                />
+              </ParallaxY>
+
+              <div
+                className="relative grid gap-10 md:grid-cols-3"
+                style={{ transform: "translateZ(20px)" }}
+              >
+                {ITEMS.map((it) => (
+                  <div key={it.label} className="text-center md:text-left">
+                    <Counter to={it.value} suffix={it.suffix} />
+                    <p className="mt-2 text-sm text-(--color-muted-foreground)">
+                      {it.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </MouseTilt>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
@@ -46,7 +64,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 
   useEffect(() => {
     if (!inView) return;
-    const duration = 1400;
+    const duration = 1600;
     const startedAt = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -60,9 +78,12 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
   }, [inView, to]);
 
   return (
-    <span ref={ref} className="text-display-md text-[color:var(--color-on-surface)]">
+    <motion.span
+      ref={ref}
+      className="block font-display text-5xl md:text-6xl text-gradient-gold"
+    >
       {n.toLocaleString("ru-RU")}
       {suffix}
-    </span>
+    </motion.span>
   );
 }

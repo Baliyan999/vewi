@@ -1,10 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * VEWI Premium input — minimal bottom-border line, label above is set in
- * label-caps (uppercase, wide-tracked). Focus turns the underline gold.
- */
 export const Input = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
@@ -13,7 +9,7 @@ export const Input = React.forwardRef<
     type={type}
     ref={ref}
     className={cn(
-      "flex h-12 w-full border-0 border-b-[0.5px] border-[color:var(--color-on-surface-variant)] bg-transparent px-0 py-2 text-[18px] leading-[1.4] text-[color:var(--color-on-surface)] placeholder:text-[color:var(--color-outline-variant)] focus:border-[color:var(--color-accent-gold)] focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
+      "flex h-11 w-full rounded-md border border-(--color-border) bg-(--color-background) px-3 py-2 text-sm placeholder:text-(--color-muted-foreground) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-ring) disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}
@@ -27,10 +23,7 @@ export const InputLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <label
     ref={ref}
-    className={cn(
-      "label-caps text-[color:var(--color-on-surface-variant)] mb-2 block",
-      className,
-    )}
+    className={cn("mb-1.5 block text-xs uppercase tracking-wider text-(--color-muted-foreground)", className)}
     {...props}
   />
 ));

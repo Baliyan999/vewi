@@ -3,9 +3,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "VEWI · Wedding OS", template: "%s · VEWI" },
+  title: { default: "QR-Фотограф", template: "%s — QR-Фотограф" },
   description:
-    "VEWI — Wedding OS: QR на столах, цифровой одноразовый фотоаппарат, единый кураторский альбом.",
+    "Сервис для свадеб: QR-коды на столах, гостевая камера в браузере, единый альбом для молодожёнов.",
   manifest: "/manifest.webmanifest",
 };
 

@@ -11,9 +11,9 @@ import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
  * mirroring the tariff lines further down the page.
  */
 const ITEMS = [
-  { value: 30, suffix: "", label: "кадров от каждого гостя" },
-  { value: 15, suffix: " сек", label: "видео-приветы от гостей" },
-  { value: 6, suffix: " мес", label: "храним архив в оригинале" },
+  { prefix: "до ", value: 30, suffix: "", label: "кадров от каждого гостя" },
+  { prefix: "до ", value: 15, suffix: " сек", label: "видео-приветы от гостей" },
+  { prefix: "до ", value: 6, suffix: " мес", label: "храним архив в оригинале" },
 ] as const;
 
 export function Stats() {
@@ -47,7 +47,7 @@ export function Stats() {
               >
                 {ITEMS.map((it) => (
                   <div key={it.label} className="text-center md:text-left">
-                    <Counter to={it.value} suffix={it.suffix} />
+                    <Counter prefix={it.prefix} to={it.value} suffix={it.suffix} />
                     <p className="mt-2 text-sm text-(--color-muted-foreground)">
                       {it.label}
                     </p>
@@ -62,7 +62,15 @@ export function Stats() {
   );
 }
 
-function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
+function Counter({
+  to,
+  suffix = "",
+  prefix = "",
+}: {
+  to: number;
+  suffix?: string;
+  prefix?: string;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const [n, setN] = useState(0);
@@ -87,6 +95,7 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
       ref={ref}
       className="block font-display text-5xl md:text-6xl text-gradient-gold"
     >
+      {prefix}
       {n.toLocaleString("ru-RU")}
       {suffix}
     </motion.span>

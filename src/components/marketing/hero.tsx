@@ -3,46 +3,36 @@
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { buttonVariants } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
 /**
- * VEWI Hero — wireframe-faithful version.
- *
- *  • Centered text column with two-line headline (italic gold accent)
- *  • Body paragraph + two CTAs
- *  • Below: small phone-frame demo card showing the QR-scan moment with a
- *    couple monogram and event date.
+ * VEWI landing hero — 1:1 with the Stitch Premium screen.
+ * Left column: eyebrow + display headline + body + two CTAs.
+ * Right column: framed image (or monogram placeholder) inside a
+ * surface-container hairline frame.
  */
 export function Hero() {
   const t = useTranslations("hero");
 
   return (
-    <section className="px-(--space-margin-mobile) md:px-(--space-margin-desktop) pt-24 pb-20 md:pt-32 md:pb-24">
+    <section className="px-(--space-margin-mobile) md:px-(--space-margin-desktop) py-(--space-section) flex flex-col md:flex-row items-center gap-(--space-gutter) min-h-[707px]">
+      {/* Text column */}
       <motion.div
-        initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
+        initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center text-center max-w-2xl mx-auto"
+        className="w-full md:w-1/2 flex flex-col justify-center gap-8 z-10"
       >
-        <p className="label-caps text-[color:var(--color-on-surface-variant)] mb-3">
-          {t("eyebrow")}
-        </p>
-
-        <h1 className="text-display-md md:text-display-lg leading-[1.1] text-[color:var(--color-on-surface)]">
-          {t("titlePre")}
-          <br />
-          {t("titleLine2pre")}{" "}
-          <span className="italic text-[color:var(--color-accent-gold)]">
-            {t("titleAccent")}
-          </span>{" "}
-          {t("titleLine2post")}
+        <h1 className="text-display-md md:text-display-lg text-[color:var(--color-on-surface)] max-w-2xl">
+          {t("title")}
         </h1>
 
-        <p className="text-body-lg mt-6 max-w-lg">{t("subtitle")}</p>
+        <p className="text-body-lg max-w-xl">
+          {t("subtitle")}
+        </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-          <a href="#lead" className={cn(buttonVariants({ size: "lg", variant: "gold" }))}>
+        <div className="flex gap-4 mt-4">
+          <a href="#lead" className={cn(buttonVariants({ size: "lg" }))}>
             {t("ctaPrimary")}
           </a>
           <a
@@ -56,29 +46,27 @@ export function Hero() {
         </div>
       </motion.div>
 
-      {/* Phone-frame demo card */}
+      {/* Image column */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto mt-14 w-full max-w-[280px]"
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full md:w-1/2 h-[530px] md:h-[707px] relative mt-12 md:mt-0"
       >
-        <div className="relative border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] p-6 flex flex-col items-center text-center gap-4">
-          {/* QR placeholder block */}
-          <div className="w-20 h-20 border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container)] grid place-items-center">
-            <Icon
-              name="qr_code_2"
-              weight={300}
-              size={48}
-              className="text-[color:var(--color-on-surface-variant)] opacity-60"
-            />
+        <div className="absolute inset-0 bg-[color:var(--color-surface-container)] rounded-sm border-[0.5px] border-[color:var(--color-outline-variant)] overflow-hidden p-2">
+          {/* Decorative wedding-mood placeholder. Replace with hero image when available. */}
+          <div
+            className="w-full h-full rounded-sm grayscale hover:grayscale-0 transition-all duration-700 relative flex items-end justify-center pb-12"
+            style={{
+              background:
+                "linear-gradient(160deg, oklch(86% 0.04 60) 0%, oklch(72% 0.07 35) 60%, oklch(50% 0.08 25) 100%)",
+            }}
+          >
+            <div className="text-center text-[color:var(--color-surface)]">
+              <div className="text-display-md italic">V&nbsp;·&nbsp;W</div>
+              <div className="label-caps opacity-80 mt-2">VEWI · WEDDING OS</div>
+            </div>
           </div>
-          <p className="font-display italic text-[color:var(--color-on-surface)] text-[18px]">
-            {t("demoCaption")}
-          </p>
-          <p className="label-caps text-[10px] text-[color:var(--color-on-surface-variant)]">
-            {t("demoSubcaption")}
-          </p>
         </div>
       </motion.div>
     </section>

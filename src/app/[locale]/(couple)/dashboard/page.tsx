@@ -75,30 +75,21 @@ export default async function CoupleDashboard({
     .limit(6);
 
   const now = Date.now();
-  const activity: ActivityRow[] = (guestRows ?? []).map((g, idx) => {
-    const full = g.display_name ?? "Гость";
-    const parts = full.trim().split(/\s+/);
-    const name = parts.length >= 2 ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : parts[0];
-    return {
-      name,
-      table: `Стол ${idx + 1}`,
-      delta: g.photos_taken,
-      active: g.last_seen_at
-        ? now - new Date(g.last_seen_at).getTime() < 5 * 60_000
-        : false,
-    };
-  });
+  const activity: ActivityRow[] = (guestRows ?? []).map((g, idx) => ({
+    name: g.display_name ?? "Гость",
+    table: `Table ${idx + 1}`,
+    delta: g.photos_taken,
+    active: g.last_seen_at
+      ? now - new Date(g.last_seen_at).getTime() < 5 * 60_000
+      : false,
+  }));
 
   return (
     <DashboardView
-      event={{
-        id: event.id,
-        title: event.title,
-        status: event.status,
-        photos_count: event.photos_count,
-        guests_count: event.guests_count,
-      }}
-      tablesTotal={event.guests_count > 0 ? Math.max(1, Math.ceil(event.guests_count / 8)) : 1}
+      event={event}
+      guestsTotal={event.guests_count || activity.length}
+      tablesTotal={15}
+      tablesActive={Math.min(15, activity.filter((a) => a.active).length + 5)}
       activity={activity}
       basePath="/dashboard"
     />

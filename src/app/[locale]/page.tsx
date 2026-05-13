@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { MarketingHeader } from "@/components/marketing/header";
 import { Hero } from "@/components/marketing/hero";
-import { Features } from "@/components/marketing/features";
+import { How } from "@/components/marketing/how";
 import { Pricing } from "@/components/marketing/pricing";
 import { LeadForm } from "@/components/marketing/lead-form";
 import { MarketingFooter } from "@/components/marketing/footer";
@@ -30,9 +30,9 @@ export default async function LandingPage({
       <MarketingHeader />
       <main className="pt-16">
         <Hero />
-        <Features />
+        <How />
         <Pricing />
-        <section id="lead" className="py-20">
+        <section id="lead" className="py-(--space-section)">
           <LeadForm />
         </section>
       </main>

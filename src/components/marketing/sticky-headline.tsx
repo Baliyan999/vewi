@@ -74,35 +74,37 @@ function Phrase({
   const span = 1 / total;
   const start = index * span;
   const end = start + span;
-  const mid = (start + end) / 2;
   const isFirst = index === 0;
 
-  // First phrase is pre-visible at progress 0 so the pinned section never
-  // shows an empty viewport on entry — it just fades out near its end.
-  // Subsequent phrases use the full fade-in/out arc.
+  // Each phrase snaps INTO place over ~10% of its span, holds rock-steady
+  // at center for ~80%, then snaps OUT in the final ~10%. Word stays
+  // genuinely readable during its turn — no slow drift while you're
+  // trying to take it in.
+  const ENTER = span * 0.1;
+  const EXIT = span * 0.1;
+  const inputs = isFirst
+    ? [end - EXIT, end]
+    : [start, start + ENTER, end - EXIT, end];
+
   const opacity = useTransform(
     progress,
-    isFirst
-      ? [end - span * 0.3, end]
-      : [start, start + span * 0.2, end - span * 0.2, end],
+    inputs,
     isFirst ? [1, 0] : [0, 1, 1, 0],
   );
   const scale = useTransform(
     progress,
-    isFirst ? [end - span * 0.3, end] : [start, mid, end],
-    isFirst ? [1, 1.06] : [0.92, 1, 1.06],
+    inputs,
+    isFirst ? [1, 1.06] : [0.92, 1, 1, 1.06],
   );
   const blur = useTransform(
     progress,
-    isFirst
-      ? [end - span * 0.3, end]
-      : [start, start + span * 0.25, end - span * 0.25, end],
+    inputs,
     isFirst ? ["0px", "8px"] : ["8px", "0px", "0px", "8px"],
   );
   const y = useTransform(
     progress,
-    isFirst ? [end - span * 0.3, end] : [start, mid, end],
-    isFirst ? [0, -30] : [30, 0, -30],
+    inputs,
+    isFirst ? [0, -30] : [30, 0, 0, -30],
   );
 
   const words = children.split(" ");

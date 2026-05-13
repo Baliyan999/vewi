@@ -12,8 +12,8 @@ import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
  */
 const ITEMS = [
   { prefix: "до ", value: 30, suffix: "", label: "кадров от каждого гостя" },
-  { prefix: "до ", value: 15, suffix: " сек", label: "видео-приветы от гостей" },
-  { prefix: "до ", value: 6, suffix: " мес", label: "храним архив в оригинале" },
+  { prefix: "до ", value: 15, suffix: "", label: "секунд на видео-привет" },
+  { prefix: "до ", value: 6, suffix: "", label: "месяцев храним архив" },
 ] as const;
 
 export function Stats() {

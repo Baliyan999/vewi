@@ -26,7 +26,7 @@ export function StickyHeadline() {
   const orbY = useTransform(scrollYProgress, [0, 1], ["-10%", "20%"]);
 
   return (
-    <section ref={ref} className="relative" style={{ height: "260vh" }}>
+    <section ref={ref} className="relative" style={{ height: "200vh" }}>
       <div className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden">
         <motion.div
           aria-hidden
@@ -84,19 +84,35 @@ function Phrase({
   const start = index * span;
   const end = start + span;
   const mid = (start + end) / 2;
+  const isFirst = index === 0;
 
+  // First phrase is pre-visible at progress 0 so the pinned section never
+  // shows an empty viewport on entry — it just fades out near its end.
+  // Subsequent phrases use the full fade-in/out arc.
   const opacity = useTransform(
     progress,
-    [start, start + span * 0.2, end - span * 0.2, end],
-    [0, 1, 1, 0],
+    isFirst
+      ? [end - span * 0.3, end]
+      : [start, start + span * 0.2, end - span * 0.2, end],
+    isFirst ? [1, 0] : [0, 1, 1, 0],
   );
-  const scale = useTransform(progress, [start, mid, end], [0.92, 1, 1.06]);
+  const scale = useTransform(
+    progress,
+    isFirst ? [end - span * 0.3, end] : [start, mid, end],
+    isFirst ? [1, 1.06] : [0.92, 1, 1.06],
+  );
   const blur = useTransform(
     progress,
-    [start, start + span * 0.25, end - span * 0.25, end],
-    ["8px", "0px", "0px", "8px"],
+    isFirst
+      ? [end - span * 0.3, end]
+      : [start, start + span * 0.25, end - span * 0.25, end],
+    isFirst ? ["0px", "8px"] : ["8px", "0px", "0px", "8px"],
   );
-  const y = useTransform(progress, [start, mid, end], [30, 0, -30]);
+  const y = useTransform(
+    progress,
+    isFirst ? [end - span * 0.3, end] : [start, mid, end],
+    isFirst ? [0, -30] : [30, 0, -30],
+  );
 
   const words = children.split(" ");
 

@@ -108,7 +108,7 @@ export function Hero() {
           scale: reduce ? 1 : titleScale,
           opacity: reduce ? 1 : titleOpacity,
         }}
-        className="container-page relative py-20 md:py-32"
+        className="container-page relative pt-20 pb-12 md:pt-32 md:pb-16"
       >
         <MouseTilt intensity={4} className="mx-auto max-w-4xl text-center">
           <motion.div

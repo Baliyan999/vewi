@@ -41,7 +41,7 @@ export function Stats() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-x-clip py-20 md:py-24"
+      className="relative overflow-x-clip py-8 md:py-12"
     >
       <FloatingOrnaments count={14} />
 

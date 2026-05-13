@@ -26,8 +26,8 @@ export function StickyHeadline() {
   const orbY = useTransform(scrollYProgress, [0, 1], ["-10%", "20%"]);
 
   return (
-    <section ref={ref} className="relative" style={{ height: "200vh" }}>
-      <div className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden">
+    <section ref={ref} className="relative" style={{ height: "130vh" }}>
+      <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-hidden">
         <motion.div
           aria-hidden
           style={{ y: reduce ? 0 : orbY }}

@@ -32,7 +32,10 @@ export function Stats() {
   // between 0.4 and 0.6 so the numbers stay legible long enough to read.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start end", "end start"],
+    // Tightened from "start end" → "end start" to "start 75%" → "end 25%"
+    // so the arc plays out in ~50vh of scroll instead of the whole lifecycle.
+    // The user reaches the next section much sooner.
+    offset: ["start 75%", "end 25%"],
   });
   const xRaw = useTransform(
     scrollYProgress,

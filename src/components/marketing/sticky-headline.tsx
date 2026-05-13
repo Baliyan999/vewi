@@ -6,6 +6,7 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
+  easeInOut,
 } from "motion/react";
 import { FloatingOrnaments } from "./parallax";
 
@@ -81,35 +82,46 @@ function Phrase({
   const end = start + span;
   const isFirst = index === 0;
 
-  // Each phrase snaps INTO place over ~10% of its span, holds rock-steady
-  // at center for ~80%, then snaps OUT in the final ~10%. Word stays
-  // genuinely readable during its turn — no slow drift while you're
-  // trying to take it in.
-  const ENTER = span * 0.1;
-  const EXIT = span * 0.1;
+  // Each phrase glides into place over ~20% of its span via an ease-in-out
+  // curve, holds at center for ~60%, then glides out in the final ~20%.
+  // The longer fades + S-curve easing make the transition feel buttery
+  // instead of stepped.
+  const ENTER = span * 0.2;
+  const EXIT = span * 0.2;
   const inputs = isFirst
     ? [end - EXIT, end]
     : [start, start + ENTER, end - EXIT, end];
 
-  const opacity = useTransform(
+  // Apply ease-in-out across every segment of the transform so each fade
+  // follows an S-curve — slow start, fast middle, slow end — instead of
+  // a linear sweep. A single function is interpreted as "use this for all
+  // segments" by motion, and the flat hold zone in the middle remains flat
+  // because both ends of that segment have the same output value.
+  const easeOpts = { ease: easeInOut };
+
+  const opacity = useTransform<number, number>(
     progress,
     inputs,
     isFirst ? [1, 0] : [0, 1, 1, 0],
+    easeOpts,
   );
-  const scale = useTransform(
+  const scale = useTransform<number, number>(
     progress,
     inputs,
     isFirst ? [1, 1.06] : [0.92, 1, 1, 1.06],
+    easeOpts,
   );
   const blur = useTransform(
     progress,
     inputs,
     isFirst ? ["0px", "8px"] : ["8px", "0px", "0px", "8px"],
+    easeOpts,
   );
-  const y = useTransform(
+  const y = useTransform<number, number>(
     progress,
     inputs,
     isFirst ? [0, -30] : [30, 0, 0, -30],
+    easeOpts,
   );
 
   const words = children.split(" ");

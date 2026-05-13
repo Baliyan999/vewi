@@ -42,13 +42,16 @@ export function Stats() {
               </ParallaxY>
 
               <div
-                className="relative grid gap-10 md:grid-cols-3"
+                className="relative grid gap-10 md:grid-cols-3 md:items-stretch"
                 style={{ transform: "translateZ(20px)" }}
               >
                 {ITEMS.map((it) => (
-                  <div key={it.label} className="text-center md:text-left">
+                  <div
+                    key={it.label}
+                    className="flex h-full flex-col text-center md:text-left"
+                  >
                     <Counter prefix={it.prefix} to={it.value} suffix={it.suffix} />
-                    <p className="mt-2 text-sm text-(--color-muted-foreground)">
+                    <p className="mt-auto pt-4 text-sm text-(--color-muted-foreground)">
                       {it.label}
                     </p>
                   </div>

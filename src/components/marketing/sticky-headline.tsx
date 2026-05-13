@@ -134,7 +134,7 @@ function Phrase({
         filter: reduce ? undefined : (blur as unknown as string),
         y: reduce ? 0 : y,
       }}
-      className="absolute inset-x-0 mx-auto font-display text-5xl leading-[1.05] md:text-7xl lg:text-8xl"
+      className="absolute inset-x-0 mx-auto font-display text-5xl leading-[1.2] py-2 md:text-7xl lg:text-8xl"
     >
       {words.map((w, i) => (
         <span key={i} className="mr-[0.3em] inline-block">

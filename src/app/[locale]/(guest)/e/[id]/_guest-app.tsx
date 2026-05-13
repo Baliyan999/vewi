@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "motion/react";
-import { Button } from "@/components/ui/button";
+import { motion } from "motion/react";
 import { Input, InputLabel } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import { FilmStrip } from "@/components/ui/film-strip";
@@ -27,12 +26,10 @@ export type GuestEventProps = {
   unavailableReason?: "not_active" | "expired";
 };
 
-type Stage = "splash" | "name" | "camera";
-
 export function GuestApp({ event, unavailableReason }: GuestEventProps) {
   const t = useTranslations("guest");
-  const [stage, setStage] = useState<Stage>("splash");
   const [name, setName] = useState<string>("");
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   if (!event) {
     return (
@@ -57,15 +54,9 @@ export function GuestApp({ event, unavailableReason }: GuestEventProps) {
     );
   }
 
-  if (stage === "camera") {
+  if (cameraOpen) {
     return <CameraView event={event} guestName={name || undefined} />;
   }
-
-  const dateStr = new Intl.DateTimeFormat("ru-RU", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(event.wedding_date));
 
   return (
     <div className="relative flex min-h-dvh flex-col">
@@ -82,71 +73,86 @@ export function GuestApp({ event, unavailableReason }: GuestEventProps) {
         </button>
       </header>
 
-      <main className="flex-1 pt-24 pb-32 px-(--space-margin-mobile) flex flex-col items-center text-center max-w-md mx-auto w-full">
-        <motion.div
+      <main className="flex-1 pt-24 pb-32 px-(--space-margin-mobile) flex flex-col max-w-md mx-auto w-full">
+        {/* Screen 1: Welcome & Name */}
+        <motion.section
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex flex-col items-center"
+          className="mb-12 flex flex-col items-center text-center"
         >
-          <p className="label-caps text-[color:var(--color-accent-gold)] mb-3">
-            {t("splashHello")}
-          </p>
-          <h2 className="text-display-md italic text-[color:var(--color-on-surface)] mb-2">
-            {event.title}
+          <h2 className="text-headline-md text-[color:var(--color-on-surface)] mb-2">
+            Capture the Magic
           </h2>
-          <p className="label-caps text-[color:var(--color-on-surface-variant)] mb-10">
-            {dateStr}
+          <p className="text-body-md text-[color:var(--color-on-surface-variant)] mb-10">
+            {t("splashSubtitle")}
           </p>
 
-          <FilmStrip className="mb-10 max-w-xs" />
+          <div className="w-full flex flex-col items-start text-left">
+            <InputLabel htmlFor="guest-name">{t("askName")}</InputLabel>
+            <Input
+              id="guest-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("namePlaceholder")}
+              maxLength={40}
+            />
+          </div>
+        </motion.section>
 
-          <p className="text-body-md mb-10 max-w-xs">{t("splashSubtitle")}</p>
-        </motion.div>
+        {/* Film strip divider */}
+        <FilmStrip className="my-8" />
 
-        <AnimatePresence mode="wait">
-          {stage === "splash" ? (
-            <motion.div
-              key="splash"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full"
-            >
-              <Button size="lg" onClick={() => setStage("name")} className="w-full">
-                {t("ctaStart")}
-                <Icon name="photo_camera" className="text-[18px]" />
-              </Button>
-              <p className="label-caps text-[color:var(--color-on-surface-variant)] mt-6">
-                {event.photos_per_guest} photos · {event.videos_per_guest} videos
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="name"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full flex flex-col gap-6"
-            >
-              <div className="text-left">
-                <InputLabel htmlFor="guest-name">{t("askName")}</InputLabel>
-                <Input
-                  id="guest-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t("namePlaceholder")}
-                  maxLength={40}
-                  autoFocus
-                />
-              </div>
-              <Button size="lg" onClick={() => setStage("camera")}>
-                {t("continue")}
-                <Icon name="arrow_forward" className="text-[18px]" />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Screen 2: Action buttons */}
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12 grid grid-cols-2 gap-4"
+        >
+          <button
+            onClick={() => setCameraOpen(true)}
+            className="flex flex-col items-center justify-center p-8 border-[0.5px] border-[color:var(--color-on-surface)] bg-[color:var(--color-background)] text-[color:var(--color-on-surface)] hover:bg-[color:var(--color-surface-container-low)] hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)] transition-colors active:opacity-70"
+          >
+            <Icon name="photo_camera" size={32} weight={200} className="mb-4" />
+            <span className="label-caps">Open Camera</span>
+          </button>
+          <label className="flex flex-col items-center justify-center p-8 border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-background)] text-[color:var(--color-on-surface-variant)] hover:bg-[color:var(--color-surface-container-low)] hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)] transition-colors active:opacity-70 cursor-pointer">
+            <input type="file" accept="image/*" multiple className="sr-only" />
+            <Icon name="photo_library" size={32} weight={200} className="mb-4" />
+            <span className="label-caps text-center">Upload Gallery</span>
+          </label>
+        </motion.section>
+
+        {/* Film strip divider */}
+        <FilmStrip className="my-8" />
+
+        {/* Screen 3: Your Uploads placeholder */}
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col"
+        >
+          <div className="flex justify-between items-end mb-6">
+            <h3 className="text-headline-sm text-[color:var(--color-on-surface)]">
+              Your Uploads
+            </h3>
+            <span className="label-caps text-[color:var(--color-on-surface-variant)]">
+              0 / {event.photos_per_guest}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            <div className="col-span-2 aspect-video border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] grid place-items-center">
+              <Icon name="add_a_photo" weight={300} size={28} className="text-[color:var(--color-on-surface-variant)] opacity-50" />
+            </div>
+            <div className="aspect-square border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)]" />
+            <div className="aspect-square border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)]" />
+          </div>
+          <p className="mt-4 label-caps text-[color:var(--color-on-surface-variant)] text-center">
+            {event.title} · {new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(new Date(event.wedding_date))}
+          </p>
+        </motion.section>
       </main>
     </div>
   );

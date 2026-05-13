@@ -1,8 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
-import { Greeting } from "@/components/couple/greeting";
-import { EventCard } from "@/components/couple/event-card";
-import { TelegramCard } from "@/components/couple/telegram-card";
-import { DEMO_COUPLE, DEMO_EVENTS } from "@/lib/demo-data";
+import { DashboardView, type ActivityRow } from "@/components/couple/dashboard-view";
+import { DEMO_EVENT_DETAIL, DEMO_GUESTS } from "@/lib/demo-data";
 
 export default async function DemoDashboard({
   params,
@@ -12,27 +10,26 @@ export default async function DemoDashboard({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  // Top 6 most-active guests for the Recent Activity feed
+  const activity: ActivityRow[] = DEMO_GUESTS
+    .slice()
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6)
+    .map((g, idx) => ({
+      name: g.display_name ?? "Гость",
+      table: `Table ${idx + 1}`,
+      delta: g.count,
+      active: idx < 3,
+    }));
+
   return (
-    <>
-      <Greeting
-        brideName={DEMO_COUPLE.bride_name}
-        groomName={DEMO_COUPLE.groom_name}
-        nextWeddingDate={DEMO_EVENTS[0].wedding_date}
-      />
-      <section className="container-page py-10">
-        <div className="grid gap-5 md:grid-cols-2">
-          {DEMO_EVENTS.map((e) => (
-            <EventCard
-              key={e.id}
-              event={e}
-              basePath="/dashboard/demo"
-            />
-          ))}
-        </div>
-      </section>
-      <section className="container-page pb-16">
-        <TelegramCard botUsername="qrphoto_uz_bot" />
-      </section>
-    </>
+    <DashboardView
+      event={DEMO_EVENT_DETAIL}
+      guestsTotal={DEMO_GUESTS.length}
+      tablesTotal={15}
+      tablesActive={12}
+      activity={activity}
+      basePath="/dashboard/demo"
+    />
   );
 }

@@ -177,7 +177,7 @@ function Tabs({
   ];
 
   return (
-    <div className="flex w-fit flex-wrap gap-1 rounded-full border border-(--color-border) bg-white/70 p-1 backdrop-blur">
+    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
       {tabs.map(({ key, label, count, icon: Icon }) => {
         const active = current === key;
         return (
@@ -185,32 +185,16 @@ function Tabs({
             key={key}
             onClick={() => onChange(key)}
             className={cn(
-              "relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm transition-colors",
+              "shrink-0 px-6 py-3 label-caps border-[0.5px] flex items-center gap-2 transition-colors active:scale-95",
               active
-                ? "text-(--color-primary-foreground)"
-                : "text-(--color-muted-foreground) hover:text-(--color-foreground)",
+                ? "bg-[color:var(--color-accent-gold)] text-[color:var(--color-background)] border-[color:var(--color-accent-gold)]"
+                : "bg-transparent text-[color:var(--color-on-surface-variant)] border-[color:var(--color-outline)] hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)]",
             )}
           >
-            {active && (
-              <motion.span
-                layoutId="galleryTabPill"
-                transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                className="absolute inset-0 -z-10 rounded-full bg-(--color-primary)"
-              />
-            )}
-            {Icon && <Icon className="relative h-3.5 w-3.5" strokeWidth={2} />}
-            <span className="relative">{label}</span>
+            {Icon && <Icon className="h-3.5 w-3.5" strokeWidth={2} />}
+            <span>{label}</span>
             {count !== undefined && (
-              <span
-                className={cn(
-                  "relative rounded-full px-1.5 text-[10px] font-semibold",
-                  active
-                    ? "bg-white/25 text-white"
-                    : "bg-(--color-muted) text-(--color-muted-foreground)",
-                )}
-              >
-                {count}
-              </span>
+              <span className="opacity-70">·  {count}</span>
             )}
           </button>
         );
@@ -237,17 +221,25 @@ function PhotoGrid({
       initial="hidden"
       animate="visible"
       variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.03 } } }}
-      className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+      className="mt-6 columns-2 sm:columns-3 lg:columns-4 gap-1 space-y-1"
     >
       {items.map((m, i) => (
-        <Tile
+        <motion.div
           key={m.id}
-          item={m}
-          mode={mode}
-          onOpen={() => onOpenLightbox(i)}
-          onPatch={onPatch}
-          demo={demo}
-        />
+          variants={{
+            hidden: { opacity: 0, scale: 0.97 },
+            visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
+          }}
+          className="break-inside-avoid"
+        >
+          <Tile
+            item={m}
+            mode={mode}
+            onOpen={() => onOpenLightbox(i)}
+            onPatch={onPatch}
+            demo={demo}
+          />
+        </motion.div>
       ))}
     </motion.div>
   );
@@ -266,40 +258,41 @@ function Tile({
   onPatch: (id: string, u: Partial<GalleryItem>) => void;
   demo: boolean;
 }) {
+  // Vary aspect ratio per tile to create the editorial masonry rhythm
+  const tileId = (item.id || "x").charCodeAt((item.id || "x").length - 1);
+  const aspect = ["aspect-[3/4]", "aspect-square", "aspect-[4/5]", "aspect-[4/3]"][tileId % 4];
+
   return (
-    <motion.div
-      variants={{
-        hidden: { opacity: 0, scale: 0.96 },
-        visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
-      }}
+    <div
       className={cn(
-        "group relative aspect-square cursor-zoom-in overflow-hidden rounded-md",
-        mode === "hidden" && "opacity-70 ring-1 ring-(--color-border)",
+        "group relative cursor-zoom-in overflow-hidden border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] p-1",
+        aspect,
+        mode === "hidden" && "opacity-60",
       )}
       onClick={onOpen}
     >
       <TileImage item={item} />
 
-      {/* Persistent badges (hidden on hover so action buttons can take over) */}
+      {/* Persistent badges */}
       {item.highlight && mode !== "hidden" && (
         <span
           aria-hidden
-          className="absolute left-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white/85 text-yellow-500 shadow-sm backdrop-blur transition-opacity duration-150 group-hover:opacity-0"
+          className="absolute left-3 top-3 inline-flex items-center gap-1 bg-[color:var(--color-background)]/85 px-1.5 py-0.5 label-caps text-[color:var(--color-accent-gold)] transition-opacity duration-150 group-hover:opacity-0"
         >
-          <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-500" />
+          <Star className="h-3 w-3 fill-current" /> Frame
         </span>
       )}
       {mode === "hidden" && (
         <span
           aria-hidden
-          className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[10px] text-white backdrop-blur transition-opacity duration-150 group-hover:opacity-0"
+          className="absolute left-3 top-3 inline-flex items-center gap-1 bg-[color:var(--color-background)]/85 px-1.5 py-0.5 label-caps text-[color:var(--color-on-surface-variant)] transition-opacity duration-150 group-hover:opacity-0"
         >
-          <EyeClosed className="h-3 w-3" /> скрыто
+          <EyeClosed className="h-3 w-3" /> Hidden
         </span>
       )}
 
       {/* Hover overlay: action buttons */}
-      <div className="absolute inset-x-2 top-2 flex justify-between opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <div className="absolute inset-x-3 top-3 flex justify-between opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {mode === "hidden" ? (
           <RestoreBtn item={item} onPatch={onPatch} demo={demo} />
         ) : (
@@ -309,7 +302,7 @@ function Tile({
           <HideBtn item={item} onPatch={onPatch} demo={demo} />
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 

@@ -20,7 +20,12 @@ export function StickyHeadline() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start start", "end end"],
+    // sticky pin lives from section.top hitting viewport.top (start start)
+    // until section.top is `(section_height − child_height) = 60vh` above
+    // viewport.top. Map useScroll progress 0→1 onto that pin window exactly
+    // so the three phrases finish their cross-fade right as the pin
+    // releases — no trailing empty pinned area.
+    offset: ["start start", "start -60%"],
   });
 
   const orbY = useTransform(scrollYProgress, [0, 1], ["-10%", "20%"]);

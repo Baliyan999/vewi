@@ -5,10 +5,15 @@ import { motion, useInView } from "motion/react";
 import { Reveal } from "./reveal";
 import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
 
+/**
+ * Honest product-promise numbers (NOT adoption metrics — we just launched).
+ * Each value reflects something real the couple receives from the service,
+ * mirroring the tariff lines further down the page.
+ */
 const ITEMS = [
-  { value: 350, suffix: "+", label: "свадеб собрано" },
-  { value: 180_000, suffix: "+", label: "кадров от гостей" },
-  { value: 96, suffix: "%", label: "молодожёнов рекомендуют" },
+  { value: 30, suffix: "", label: "кадров от каждого гостя" },
+  { value: 15, suffix: " сек", label: "видео-приветы от гостей" },
+  { value: 6, suffix: " мес", label: "храним архив в оригинале" },
 ] as const;
 
 export function Stats() {

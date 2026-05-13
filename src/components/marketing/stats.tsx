@@ -26,17 +26,50 @@ export function Stats() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
 
-  // Horizontal scroll-driven reveal: card slides in from the left edge of the
-  // viewport, lands centered, and rotates a touch into place.
+  // Ballistic arc across the viewport: card flies in from off-screen lower-left,
+  // briefly settles at center, then drifts out toward the upper-right as the
+  // user scrolls past. The 4-stop transforms create a built-in "linger" zone
+  // between 0.4 and 0.6 so the numbers stay legible long enough to read.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start 90%", "center 55%"],
+    offset: ["start end", "end start"],
   });
-  const xRaw = useTransform(scrollYProgress, [0, 1], ["-120%", "0%"]);
+  const xRaw = useTransform(
+    scrollYProgress,
+    [0, 0.4, 0.6, 1],
+    ["-130%", "0%", "0%", "140%"],
+  );
   const x = useSpring(xRaw, { stiffness: 120, damping: 26, mass: 0.6 });
-  const rotate = useTransform(scrollYProgress, [0, 1], [-5, 0]);
-  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.6, 1]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.92, 1]);
+
+  // Rotation curls: -6° on entry → 0° at rest → +9° as it tumbles out.
+  const rotate = useTransform(
+    scrollYProgress,
+    [0, 0.4, 0.6, 1],
+    [-6, 0, 0, 9],
+  );
+
+  // Y describes the arc — comes up from below, peaks flat at centre, then
+  // arcs upward as it exits (parabolic feel without a real physics sim).
+  const y = useTransform(
+    scrollYProgress,
+    [0, 0.4, 0.6, 1],
+    [50, 0, 0, -90],
+  );
+
+  // Fade in/out at the lifecycle edges, full visible across the middle 70%.
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.15, 0.85, 1],
+    [0, 1, 1, 0],
+  );
+
+  // Scale: grows into place, shrinks slightly as it leaves so it feels like
+  // it's actually receding rather than just sliding off.
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.4, 0.6, 1],
+    [0.9, 1, 1, 0.82],
+  );
 
   return (
     <section

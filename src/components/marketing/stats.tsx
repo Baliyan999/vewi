@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "motion/react";
-import { Reveal } from "./reveal";
+import {
+  motion,
+  useInView,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  useSpring,
+} from "motion/react";
 import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
 
 /**
@@ -17,12 +23,37 @@ const ITEMS = [
 ] as const;
 
 export function Stats() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+
+  // Horizontal scroll-driven reveal: card slides in from the left edge of the
+  // viewport, lands centered, and rotates a touch into place.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 90%", "center 55%"],
+  });
+  const xRaw = useTransform(scrollYProgress, [0, 1], ["-120%", "0%"]);
+  const x = useSpring(xRaw, { stiffness: 120, damping: 26, mass: 0.6 });
+  const rotate = useTransform(scrollYProgress, [0, 1], [-5, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0, 0.6, 1]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.92, 1]);
+
   return (
-    <section className="relative overflow-hidden py-20 md:py-24">
+    <section
+      ref={sectionRef}
+      className="relative overflow-x-clip py-20 md:py-24"
+    >
       <FloatingOrnaments count={14} />
 
       <div className="container-page relative">
-        <Reveal className="mx-auto max-w-3xl">
+        <motion.div
+          style={
+            reduce
+              ? undefined
+              : { x, rotate, opacity, scale }
+          }
+          className="mx-auto max-w-3xl will-change-transform"
+        >
           <MouseTilt intensity={5}>
             <div
               className="surface-card relative overflow-hidden rounded-(--radius-xl) p-10 md:p-14"
@@ -59,7 +90,7 @@ export function Stats() {
               </div>
             </div>
           </MouseTilt>
-        </Reveal>
+        </motion.div>
       </div>
     </section>
   );

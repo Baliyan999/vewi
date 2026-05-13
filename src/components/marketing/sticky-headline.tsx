@@ -52,15 +52,6 @@ export function StickyHeadline() {
               {phrase}
             </Phrase>
           ))}
-
-          <motion.div
-            style={{
-              opacity: useTransform(scrollYProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]),
-            }}
-            className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-(--color-muted-foreground)"
-          >
-            ⌄  пролистайте  ⌄
-          </motion.div>
         </div>
       </div>
     </section>

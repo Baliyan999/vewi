@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Input, InputLabel } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
-import { FilmStrip } from "@/components/ui/film-strip";
 import { CameraView } from "@/components/camera/camera-view";
+import { cn } from "@/lib/utils";
 
 export type GuestEventProps = {
   event: {
@@ -26,9 +26,13 @@ export type GuestEventProps = {
   unavailableReason?: "not_active" | "expired";
 };
 
+type Stage = "name" | "capture";
+
 export function GuestApp({ event, unavailableReason }: GuestEventProps) {
   const t = useTranslations("guest");
+  const [stage, setStage] = useState<Stage>("name");
   const [name, setName] = useState<string>("");
+  const [uploads, setUploads] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);
 
   if (!event) {
@@ -58,6 +62,18 @@ export function GuestApp({ event, unavailableReason }: GuestEventProps) {
     return <CameraView event={event} guestName={name || undefined} />;
   }
 
+  const dateStr = new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(event.wedding_date));
+
+  // Split "Alina & Rustam" → ["Alina", "Rustam"] so the ampersand can use italic gold
+  const titleParts = event.title.split(/\s*&\s*/);
+  const [first, second] = titleParts.length >= 2
+    ? [titleParts[0], titleParts.slice(1).join(" & ")]
+    : [event.title, ""];
+
   return (
     <div className="relative flex min-h-dvh flex-col">
       {/* Top bar */}
@@ -65,95 +81,216 @@ export function GuestApp({ event, unavailableReason }: GuestEventProps) {
         <button className="text-[color:var(--color-on-surface)] hover:text-[color:var(--color-accent-gold)]">
           <Icon name="menu" size={22} />
         </button>
-        <h1 className="text-display-md tracking-tight text-[color:var(--color-on-surface)]">
+        <span className="text-display-md tracking-tight text-[color:var(--color-on-surface)]">
           VEWI
-        </h1>
+        </span>
         <button className="text-[color:var(--color-on-surface)] hover:text-[color:var(--color-accent-gold)]">
           <Icon name="account_circle" size={22} />
         </button>
       </header>
 
-      <main className="flex-1 pt-24 pb-32 px-(--space-margin-mobile) flex flex-col max-w-md mx-auto w-full">
-        {/* Screen 1: Welcome & Name */}
-        <motion.section
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 flex flex-col items-center text-center"
-        >
-          <h2 className="text-headline-md text-[color:var(--color-on-surface)] mb-2">
-            Capture the Magic
-          </h2>
-          <p className="text-body-md text-[color:var(--color-on-surface-variant)] mb-10">
-            {t("splashSubtitle")}
-          </p>
-
-          <div className="w-full flex flex-col items-start text-left">
-            <InputLabel htmlFor="guest-name">{t("askName")}</InputLabel>
-            <Input
-              id="guest-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("namePlaceholder")}
-              maxLength={40}
+      <main className="flex-1 pt-24 pb-12 px-(--space-margin-mobile) flex flex-col items-center max-w-md mx-auto w-full">
+        <AnimatePresence mode="wait">
+          {stage === "name" ? (
+            <NameCard
+              key="name"
+              event={{ first, second, dateStr }}
+              name={name}
+              setName={setName}
+              onContinue={() => setStage("capture")}
+              onAnonymous={() => {
+                setName("");
+                setStage("capture");
+              }}
             />
-          </div>
-        </motion.section>
-
-        {/* Film strip divider */}
-        <FilmStrip className="my-8" />
-
-        {/* Screen 2: Action buttons */}
-        <motion.section
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 grid grid-cols-2 gap-4"
-        >
-          <button
-            onClick={() => setCameraOpen(true)}
-            className="flex flex-col items-center justify-center p-8 border-[0.5px] border-[color:var(--color-on-surface)] bg-[color:var(--color-background)] text-[color:var(--color-on-surface)] hover:bg-[color:var(--color-surface-container-low)] hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)] transition-colors active:opacity-70"
-          >
-            <Icon name="photo_camera" size={32} weight={200} className="mb-4" />
-            <span className="label-caps">Open Camera</span>
-          </button>
-          <label className="flex flex-col items-center justify-center p-8 border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-background)] text-[color:var(--color-on-surface-variant)] hover:bg-[color:var(--color-surface-container-low)] hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)] transition-colors active:opacity-70 cursor-pointer">
-            <input type="file" accept="image/*" multiple className="sr-only" />
-            <Icon name="photo_library" size={32} weight={200} className="mb-4" />
-            <span className="label-caps text-center">Upload Gallery</span>
-          </label>
-        </motion.section>
-
-        {/* Film strip divider */}
-        <FilmStrip className="my-8" />
-
-        {/* Screen 3: Your Uploads placeholder */}
-        <motion.section
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col"
-        >
-          <div className="flex justify-between items-end mb-6">
-            <h3 className="text-headline-sm text-[color:var(--color-on-surface)]">
-              Your Uploads
-            </h3>
-            <span className="label-caps text-[color:var(--color-on-surface-variant)]">
-              0 / {event.photos_per_guest}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-1">
-            <div className="col-span-2 aspect-video border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] grid place-items-center">
-              <Icon name="add_a_photo" weight={300} size={28} className="text-[color:var(--color-on-surface-variant)] opacity-50" />
-            </div>
-            <div className="aspect-square border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)]" />
-            <div className="aspect-square border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)]" />
-          </div>
-          <p className="mt-4 label-caps text-[color:var(--color-on-surface-variant)] text-center">
-            {event.title} · {new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(new Date(event.wedding_date))}
-          </p>
-        </motion.section>
+          ) : (
+            <CaptureCard
+              key="capture"
+              name={name}
+              uploads={uploads}
+              total={event.photos_per_guest}
+              onAdd={() => {
+                setCameraOpen(true);
+                setUploads((u) => Math.min(u + 1, event.photos_per_guest));
+              }}
+            />
+          )}
+        </AnimatePresence>
       </main>
+    </div>
+  );
+}
+
+function NameCard({
+  event,
+  name,
+  setName,
+  onContinue,
+  onAnonymous,
+}: {
+  event: { first: string; second: string; dateStr: string };
+  name: string;
+  setName: (s: string) => void;
+  onContinue: () => void;
+  onAnonymous: () => void;
+}) {
+  const t = useTranslations("guest");
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full"
+    >
+      <div className="border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] p-8 flex flex-col items-center text-center gap-7">
+        {/* Couple name */}
+        <div>
+          <h1 className="text-headline-md text-[color:var(--color-on-surface)]">
+            {event.first}
+            {event.second && (
+              <>
+                {" "}
+                <span className="italic text-[color:var(--color-accent-gold)]">&amp;</span>{" "}
+                {event.second}
+              </>
+            )}
+          </h1>
+          <p className="label-caps text-[color:var(--color-on-surface-variant)] mt-2">
+            {event.dateStr}
+          </p>
+        </div>
+
+        {/* Name input */}
+        <div className="w-full text-left">
+          <InputLabel htmlFor="g-name">{t("askName")}</InputLabel>
+          <Input
+            id="g-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("namePlaceholder")}
+            maxLength={40}
+            autoFocus
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="w-full flex flex-col gap-2">
+          <button
+            onClick={onContinue}
+            disabled={!name.trim()}
+            className="h-12 w-full bg-[color:var(--color-accent-gold)] text-[color:var(--color-background)] label-caps flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:opacity-80 hover:opacity-90 transition-opacity"
+          >
+            {t("signIn")}
+            <Icon name="arrow_forward" size={16} />
+          </button>
+          <button
+            onClick={onAnonymous}
+            className="h-12 w-full border-[0.5px] border-[color:var(--color-outline-variant)] text-[color:var(--color-on-surface-variant)] label-caps hover:border-[color:var(--color-accent-gold)] hover:text-[color:var(--color-accent-gold)] transition-colors"
+          >
+            {t("anonymous")}
+          </button>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function CaptureCard({
+  name,
+  uploads,
+  total,
+  onAdd,
+}: {
+  name: string;
+  uploads: number;
+  total: number;
+  onAdd: () => void;
+}) {
+  const t = useTranslations("guest");
+  const greeting = name.trim()
+    ? t("helloName", { name: name.trim() })
+    : t("helloAnonymous");
+
+  // 5 slots — first is the hero (col-span-2), then 4 smaller below
+  const slots: ("filled" | "empty")[] = Array.from({ length: 5 }, (_, i) =>
+    i < uploads ? "filled" : "empty",
+  );
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full"
+    >
+      <div className="border-[0.5px] border-[color:var(--color-outline-variant)] bg-[color:var(--color-surface-container-low)] p-8 flex flex-col gap-6 text-center">
+        <div>
+          <h1 className="text-headline-md text-[color:var(--color-on-surface)]">
+            {greeting}
+          </h1>
+          <p className="text-body-md mt-2">{t("captureTitle")}</p>
+          <p className="label-caps text-[10px] text-[color:var(--color-on-surface-variant)] mt-3">
+            {t("captureSubtitle")}
+          </p>
+        </div>
+
+        {/* Photo grid */}
+        <div className="grid grid-cols-2 gap-1">
+          <Slot kind={slots[0]} large />
+          <Slot kind={slots[1]} />
+          <Slot kind={slots[2]} />
+          <Slot kind={slots[3]} />
+          <Slot kind={slots[4]} />
+        </div>
+
+        <p className="label-caps text-[10px] text-[color:var(--color-on-surface-variant)]">
+          {t("uploadedStatus", { count: uploads })}
+        </p>
+
+        <button
+          onClick={onAdd}
+          disabled={uploads >= total}
+          className={cn(
+            "h-12 w-full bg-[color:var(--color-accent-gold)] text-[color:var(--color-background)] label-caps flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:opacity-80 hover:opacity-90 transition-opacity",
+          )}
+        >
+          <Icon name="add" size={18} />
+          {t("addMore")}
+        </button>
+      </div>
+    </motion.section>
+  );
+}
+
+function Slot({ kind, large = false }: { kind: "filled" | "empty"; large?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "aspect-square border-[0.5px] border-[color:var(--color-outline-variant)] grid place-items-center",
+        large && "col-span-2 aspect-video",
+        kind === "filled"
+          ? "bg-[color:var(--color-surface-container)]"
+          : "bg-[color:var(--color-surface)]",
+      )}
+    >
+      {kind === "filled" ? (
+        <Icon
+          name="check"
+          weight={300}
+          size={20}
+          className="text-[color:var(--color-accent-gold)] opacity-60"
+        />
+      ) : (
+        <Icon
+          name="add_a_photo"
+          weight={300}
+          size={20}
+          className="text-[color:var(--color-on-surface-variant)] opacity-40"
+        />
+      )}
     </div>
   );
 }

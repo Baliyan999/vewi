@@ -11,15 +11,16 @@
     "loginCouple": "Kelin-kuyov kabineti"
   },
   "hero": {
-    "eyebrow": "To'y — kalit yechimda",
-    "title": "To'yingizdan hech bir kadr yo'qolmaydi",
-    "subtitle": "Mehmonlar stoldagi QR'ni skanerlaydi → brauzerda kamera ochiladi → har biri o'z suratlarini yuboradi. Siz butun albomni bir arxiv qilib yuklab olasiz.",
+    "eyebrow": "Tashkilotchilar uchun",
+    "titlePre": "To'yingiz",
+    "titleLine2pre": "har bir",
+    "titleAccent": "mehmonning",
+    "titleLine2post": "ko'zi bilan",
+    "subtitle": "To'yingiz uchun raqamli bir martalik kamera. Mehmonlar QR'ni skanerlaydi — siz yuzlab jonli kadrlarni olasiz.",
     "ctaPrimary": "Ariza qoldirish",
-    "ctaSecondary": "Qanday ishlaydi",
-    "bullet1": "Ilova o'rnatish kerak emas — brauzerda ochiladi",
-    "bullet2": "250 gacha mehmon, har biridan 30 tagacha surat",
-    "bullet3": "Video-tabriklar va ovozli xabarlar",
-    "bullet4": "Zal proyektorida jonli slayd-shou"
+    "ctaSecondary": "Demoni ko'rish",
+    "demoCaption": "Skanerla va suratga ol!",
+    "demoSubcaption": "ALINA & RUSTAM · 14.08.2025"
   },
   "how": {
     "title": "Qanday ishlaydi",
@@ -31,56 +32,35 @@
     "step3Desc": "Kelin-kuyov kabinetida mehmonlar yuborgan barcha suratlarni ko'rasiz. Bir bosishda arxivlab yuklaysiz."
   },
   "features": {
-    "title": "Ichida nima bor",
-    "subtitle": "Faqat surat yuklash emas — to'y kuningiz uchun to'liq xizmat",
-    "f1Title": "Jonli slayd-shou",
-    "f1Desc": "Zal proyektorida mehmonlar suratlari real vaqtda paydo bo'ladi. O'z kadrlarini ko'rib, yana suratga olishadi.",
-    "f2Title": "Video-tabriklar",
-    "f2Desc": "Har bir mehmon 3–15 soniyalik klip yozishi mumkin. Quruq SMS o'rniga jonli xotira.",
-    "f3Title": "Ovozli mehmonlar kitobi",
-    "f3Desc": "Kitobga yozuvlar o'rniga — his-tuyg'ular bilan ovozli xabarlar.",
-    "f4Title": "Bir swipe bilan moderatsiya",
-    "f4Desc": "Tinder kabi suratlarni ko'rib, bir harakatda yaroqsiz kadrlarni yashirasiz.",
-    "f5Title": "Geofence va himoya",
-    "f5Desc": "QR faqat to'y joyida va faqat to'y kunida ishlaydi. Begona odam kira olmaydi.",
-    "f6Title": "Telegram-bot",
-    "f6Desc": "Yangi suratlar haqida xabarlar va arxivni yuklab olish eslatmasi — to'g'ri Telegram'ga."
+    "f1Title": "QR 2 daqiqada",
+    "f1Desc": "Tadbir yaratasiz, stollarga chop etish uchun tayyor maket olasiz.",
+    "f2Title": "Mehmonlar ismlari",
+    "f2Desc": "Har bir surat imzolanadi — kim qachon nima suratga olganini bilasiz.",
+    "f3Title": "Keyin galereya",
+    "f3Desc": "Umumiy lenta siz xohlagan paytda ochiladi — syurpriz effekti.",
+    "f4Title": "Asl arxiv",
+    "f4Desc": "Barcha suratlarni to'liq sifatda bitta ZIP qilib yuklab oling."
   },
   "pricing": {
-    "title": "Tariflar",
-    "subtitle": "Bir to'y uchun narx — obuna yo'q",
-    "currency": "UZS",
-    "perEvent": "bir to'yga",
-    "ctaSelect": "Tanlash",
-    "popular": "Ko'pincha tanlanadi",
+    "currency": "$",
+    "popular": "Popular",
     "basic": {
-      "name": "Basic",
-      "price": "390 000",
-      "f1": "100 mehmongacha",
-      "f2": "Har biridan 20 surat",
-      "f3": "14 kun saqlash",
-      "f4": "ZIP yuklab olish",
-      "f5": "PDF QR-kodlar"
+      "name": "BASIC",
+      "price": "19",
+      "f1": "200 surat",
+      "f2": "30 kun"
     },
-    "pro": {
-      "name": "Pro",
-      "price": "790 000",
-      "f1": "250 mehmongacha",
-      "f2": "30 surat + 5 video-klip",
-      "f3": "30 kun saqlash",
-      "f4": "Jonli slayd-shou",
-      "f5": "Tadbir brendlash",
-      "f6": "Telegram-bot"
+    "classic": {
+      "name": "CLASSIC",
+      "price": "39",
+      "f1": "1000 surat",
+      "f2": "8 oy + QR maketlari"
     },
     "premium": {
-      "name": "Premium",
-      "price": "1 690 000",
-      "f1": "Mehmonlar soni cheksiz",
-      "f2": "Suratlar soni cheksiz",
-      "f3": "6 oy saqlash",
-      "f4": "AI eng yaxshi kadrlar tanlovi",
-      "f5": "Maxsus domen",
-      "f6": "Google Drive'ga eksport"
+      "name": "PREMIUM",
+      "price": "69",
+      "f1": "Cheksiz",
+      "f2": "1 yil + maxsus"
     }
   },
   "lead": {
@@ -103,9 +83,17 @@
     "splashHello": "To'yga xush kelibsiz",
     "splashSubtitle": "Kelin-kuyovga eng to'liq albomni yig'ishga yordam bering",
     "ctaStart": "Suratga olishni boshlash",
-    "askName": "Ismingiz nima?",
-    "namePlaceholder": "Ismingiz (ixtiyoriy)",
+    "askName": "Isming nima?",
+    "namePlaceholder": "Ismingiz",
     "continue": "Davom etish",
+    "signIn": "Kirish",
+    "anonymous": "Anonim qolish",
+    "helloName": "Salom, {name}!",
+    "helloAnonymous": "Salom!",
+    "captureTitle": "Surat oling yoki yuklang",
+    "captureSubtitle": "Bu sizning bugungi kontentingiz",
+    "uploadedStatus": "{count} surat yuklandi — faqat siz ko'rasiz",
+    "addMore": "Yana qo'shish",
     "shotsLeft": "{count} / {total} qoldi",
     "shotsUsed": "Limit tugadi",
     "permissionTitle": "Kameraga ruxsat kerak",

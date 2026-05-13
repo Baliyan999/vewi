@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "title": "VEWI · Wedding OS — to'ydagi barcha suratlar mehmonlardan",
+    "description": "VEWI — to'yingiz uchun raqamli bir martalik fotokamera. Stollarda QR-kodlar, ilovalar yo'q, yagona kuratorlik albom."
+  },
+  "nav": {
+    "features": "Imkoniyatlar",
+    "pricing": "Tariflar",
+    "howItWorks": "Qanday ishlaydi",
+    "contact": "Bog'lanish",
+    "loginCouple": "Kelin-kuyov kabineti"
+  },
+  "hero": {
+    "eyebrow": "To'y — kalit yechimda",
+    "title": "To'yingizdan hech bir kadr yo'qolmaydi",
+    "subtitle": "Mehmonlar stoldagi QR'ni skanerlaydi → brauzerda kamera ochiladi → har biri o'z suratlarini yuboradi. Siz butun albomni bir arxiv qilib yuklab olasiz.",
+    "ctaPrimary": "Ariza qoldirish",
+    "ctaSecondary": "Qanday ishlaydi",
+    "bullet1": "Ilova o'rnatish kerak emas — brauzerda ochiladi",
+    "bullet2": "250 gacha mehmon, har biridan 30 tagacha surat",
+    "bullet3": "Video-tabriklar va ovozli xabarlar",
+    "bullet4": "Zal proyektorida jonli slayd-shou"
+  },
+  "how": {
+    "title": "Qanday ishlaydi",
+    "step1Title": "Tadbir yaratamiz",
+    "step1Desc": "Ismlar, sana, joy, juftlik surati. Stolga chop etish uchun tayyor PDF QR-kodlarni olasiz.",
+    "step2Title": "Mehmonlar skanerlaydi",
+    "step2Desc": "Telefon bilan QR'ga bitta tegishingiz — kelin-kuyov ismlari va 'Suratga olish' tugmasi bilan chiroyli sahifa ochiladi.",
+    "step3Title": "Barcha suratlar sizda",
+    "step3Desc": "Kelin-kuyov kabinetida mehmonlar yuborgan barcha suratlarni ko'rasiz. Bir bosishda arxivlab yuklaysiz."
+  },
+  "features": {
+    "title": "Ichida nima bor",
+    "subtitle": "Faqat surat yuklash emas — to'y kuningiz uchun to'liq xizmat",
+    "f1Title": "Jonli slayd-shou",
+    "f1Desc": "Zal proyektorida mehmonlar suratlari real vaqtda paydo bo'ladi. O'z kadrlarini ko'rib, yana suratga olishadi.",
+    "f2Title": "Video-tabriklar",
+    "f2Desc": "Har bir mehmon 3–15 soniyalik klip yozishi mumkin. Quruq SMS o'rniga jonli xotira.",
+    "f3Title": "Ovozli mehmonlar kitobi",
+    "f3Desc": "Kitobga yozuvlar o'rniga — his-tuyg'ular bilan ovozli xabarlar.",
+    "f4Title": "Bir swipe bilan moderatsiya",
+    "f4Desc": "Tinder kabi suratlarni ko'rib, bir harakatda yaroqsiz kadrlarni yashirasiz.",
+    "f5Title": "Geofence va himoya",
+    "f5Desc": "QR faqat to'y joyida va faqat to'y kunida ishlaydi. Begona odam kira olmaydi.",
+    "f6Title": "Telegram-bot",
+    "f6Desc": "Yangi suratlar haqida xabarlar va arxivni yuklab olish eslatmasi — to'g'ri Telegram'ga."
+  },
+  "pricing": {
+    "title": "Tariflar",
+    "subtitle": "Bir to'y uchun narx — obuna yo'q",
+    "currency": "UZS",
+    "perEvent": "bir to'yga",
+    "ctaSelect": "Tanlash",
+    "popular": "Ko'pincha tanlanadi",
+    "basic": {
+      "name": "Basic",
+      "price": "390 000",
+      "f1": "100 mehmongacha",
+      "f2": "Har biridan 20 surat",
+      "f3": "14 kun saqlash",
+      "f4": "ZIP yuklab olish",
+      "f5": "PDF QR-kodlar"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "790 000",
+      "f1": "250 mehmongacha",
+      "f2": "30 surat + 5 video-klip",
+      "f3": "30 kun saqlash",
+      "f4": "Jonli slayd-shou",
+      "f5": "Tadbir brendlash",
+      "f6": "Telegram-bot"
+    },
+    "premium": {
+      "name": "Premium",
+      "price": "1 690 000",
+      "f1": "Mehmonlar soni cheksiz",
+      "f2": "Suratlar soni cheksiz",
+      "f3": "6 oy saqlash",
+      "f4": "AI eng yaxshi kadrlar tanlovi",
+      "f5": "Maxsus domen",
+      "f6": "Google Drive'ga eksport"
+    }
+  },
+  "lead": {
+    "title": "Ariza qoldiring",
+    "subtitle": "Bir soat ichida siz bilan bog'lanamiz",
+    "name": "Ismingiz",
+    "phone": "Telefon",
+    "weddingDate": "To'y sanasi",
+    "guests": "Taxminiy mehmonlar soni",
+    "submit": "Yuborish",
+    "submitting": "Yuborilmoqda…",
+    "successTitle": "Rahmat!",
+    "successDesc": "Bir soat ichida Telegram/WhatsApp orqali bog'lanamiz."
+  },
+  "footer": {
+    "tagline": "To'ydagi barcha suratlar — bir joyda",
+    "rights": "Barcha huquqlar himoyalangan"
+  },
+  "guest": {
+    "splashHello": "To'yga xush kelibsiz",
+    "splashSubtitle": "Kelin-kuyovga eng to'liq albomni yig'ishga yordam bering",
+    "ctaStart": "Suratga olishni boshlash",
+    "askName": "Ismingiz nima?",
+    "namePlaceholder": "Ismingiz (ixtiyoriy)",
+    "continue": "Davom etish",
+    "shotsLeft": "{count} / {total} qoldi",
+    "shotsUsed": "Limit tugadi",
+    "permissionTitle": "Kameraga ruxsat kerak",
+    "permissionDesc": "Kamerasiz suratga ololmaysiz. Brauzer sozlamalarini oching va ruxsat bering.",
+    "switchCamera": "Kamerani almashtirish",
+    "torch": "Chaqnoq",
+    "send": "Yuborish",
+    "retake": "Qayta olish",
+    "uploading": "Yuklanmoqda…",
+    "uploaded": "Yuborildi",
+    "offline": "Aloqa yo'q — internet paydo bo'lishi bilan suratlar yuboriladi"
+  },
+  "couple": {
+    "greetingMorning": "Xayrli tong",
+    "greetingDay": "Xayrli kun",
+    "greetingEvening": "Xayrli oqshom",
+    "greetingNight": "Xayrli tun",
+    "untilWedding": "To'ygacha",
+    "sinceWedding": "To'yingizdan beri o'tdi",
+    "daysShort": "k",
+    "hoursShort": "s",
+    "minutesShort": "d",
+    "today": "Bugun sizning kuningiz",
+    "nav": {
+      "albums": "Albomlar",
+      "branding": "Bezatish",
+      "settings": "Sozlamalar",
+      "live": "Live slayd-shou",
+      "logout": "Chiqish",
+      "demo": "Demo rejimi"
+    },
+    "stats": {
+      "photos": "Surat",
+      "videos": "Video",
+      "guests": "Mehmon",
+      "highlights": "Eng yaxshi kadr"
+    },
+    "card": {
+      "open": "Albomni ochish",
+      "download": "ZIP yuklab olish",
+      "live": "Slayd-shou ochish",
+      "expiresIn": "Albom {date} sanasida yopiladi",
+      "active": "Hozir bormoqda",
+      "draft": "Qoralama",
+      "archived": "Arxiv",
+      "expired": "Muddati o'tgan"
+    },
+    "telegramCard": {
+      "title": "Telegram'ni ulang",
+      "desc": "Mehmonlar surat yubora boshlaganda bot xabar beradi va arxivni yuklab olishni eslatadi.",
+      "cta": "Botni ochish"
+    },
+    "empty": {
+      "title": "Hozircha tadbirlar yo'q",
+      "desc": "To'yingizni ushbu raqamga bog'lash uchun biz bilan bog'laning."
+    },
+    "settings": {
+      "title": "Kabinet sozlamalari",
+      "phone": "Telefon raqami",
+      "telegram": "Telegram",
+      "telegramHint": "Yangi surat va eslatmalar olish uchun bot bilan suhbatni ulang.",
+      "telegramConnect": "Telegram'ni ulash",
+      "telegramConnected": "Ulangan: @{username}",
+      "language": "Interfeys tili",
+      "save": "Saqlash"
+    }
+  }
+}

@@ -42,14 +42,13 @@
   }
 
   body {
-    /* Near-flat warm-ivory wash. The previous 5-stop gradient still
-     * showed a faint horizontal seam where stops met. Reduced to a
-     * single 2-stop gradient with very close oklch values so there's
-     * no perceptible transition. Top-right champagne accent provides
-     * the only directional warmth. */
+    /* Completely flat warm-ivory base — even a 2-stop linear-gradient
+     * with different hues showed a visible vertical band on wide
+     * viewports. Now we use a single solid background-color and only
+     * a soft top-right radial accent. No gradient = no seam, ever. */
+    background-color: oklch(96% 0.028 65);
     background-image:
-      radial-gradient(circle 1100px at 100% 0%, oklch(91% 0.05 75 / 0.28), transparent 70%),
-      linear-gradient(180deg, oklch(96% 0.030 55) 0%, oklch(96% 0.030 70) 100%);
+      radial-gradient(circle 1100px at 100% 0%, oklch(91% 0.05 75 / 0.28), transparent 70%);
     background-attachment: fixed;
   }
 

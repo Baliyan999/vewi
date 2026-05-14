@@ -247,20 +247,12 @@ function Step({
       }
     >
       <MouseTilt intensity={4} perspective={1200}>
-        <div className="group relative grid grid-cols-[64px_1fr] items-start gap-4 rounded-(--radius-lg) p-2 sm:grid-cols-[80px_1fr] sm:gap-6 sm:p-4">
-          {/* Frosted background card — appears on hover. Gives the step
-              a sense of "lifting" off the page when interacted with. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-(--radius-lg) bg-white/40 opacity-0 shadow-(--shadow-soft) backdrop-blur-sm transition-opacity duration-500 group-hover:opacity-100"
-            style={{ transform: "translateZ(-10px)" }}
-          />
-          {/* Soft accent gradient on the leading edge of the card */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-(--radius-lg) bg-gradient-to-b from-(--color-primary) via-(--color-rose) to-(--color-champagne) opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          />
-
+        {/* No padding on the row — that was shifting the badge off the
+            timeline line. No frosted background card either — it looked
+            blocky and clipped the comet trail at the row's left edge. The
+            tilt + badge activation + comet on the line already carry
+            enough motion. */}
+        <div className="group grid grid-cols-[64px_1fr] items-start gap-4 sm:grid-cols-[80px_1fr] sm:gap-6">
           <StepBadge
             Icon={Icon}
             number={number}
@@ -270,13 +262,13 @@ function Step({
           />
 
           <div
-            className="relative pt-1 sm:pt-2"
+            className="pt-1 sm:pt-2"
             style={{ transform: "translateZ(30px)" }}
           >
             <h3 className="mb-2 heading-display-md transition-transform duration-500 group-hover:translate-x-1">
               {title}
             </h3>
-            <p className="max-w-xl text-pretty text-(--color-muted-foreground)">
+            <p className="max-w-xl text-pretty text-(--color-muted-foreground) transition-colors duration-500 group-hover:text-(--color-foreground)">
               {desc}
             </p>
           </div>

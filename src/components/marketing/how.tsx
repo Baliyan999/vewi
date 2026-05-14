@@ -7,17 +7,16 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
+  useMotionValue,
+  useSpring,
   type MotionValue,
 } from "motion/react";
 import { QrCode, Camera, Heart } from "lucide-react";
 import { Reveal } from "./reveal";
-import { ParallaxY, FloatingOrnaments } from "./parallax";
+import { MouseTilt, FloatingOrnaments } from "./parallax";
 import { Rings } from "./ornaments";
 
 const ICONS = [QrCode, Camera, Heart] as const;
-// Strength of the per-step Y parallax — odd-indexed steps drift up slightly
-// for an asymmetric, "alive" feel as the user scrolls past.
-const STEP_STRENGTHS = [0.08, -0.06, 0.09] as const;
 // Each step "ignites" (gets a pulse ring + scale-up) when scrollYProgress
 // reaches this value. Distributed so steps light up one after another in
 // rhythm with the user passing them on-screen.
@@ -32,8 +31,21 @@ export function How() {
     offset: ["start 80%", "end 30%"],
   });
 
-  // Master scroll-driven motion values. The line grows top-to-bottom in
-  // sync with section progress; a glowing comet rides the leading edge.
+  // Cursor coordinates relative to the section. A soft spotlight follows
+  // the cursor and gently lights up whatever the user is hovering over.
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const spotX = useSpring(cursorX, { stiffness: 120, damping: 24, mass: 0.6 });
+  const spotY = useSpring(cursorY, { stiffness: 120, damping: 24, mass: 0.6 });
+
+  function onSectionMouseMove(e: React.MouseEvent<HTMLElement>) {
+    if (!sectionRef.current) return;
+    const r = sectionRef.current.getBoundingClientRect();
+    cursorX.set(e.clientX - r.left);
+    cursorY.set(e.clientY - r.top);
+  }
+
+  // Master scroll-driven motion values for the timeline.
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const cometTop = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const cometOpacity = useTransform(
@@ -55,8 +67,25 @@ export function How() {
     <section
       id="how"
       ref={sectionRef}
+      onMouseMove={reduce ? undefined : onSectionMouseMove}
       className="relative overflow-hidden py-20 md:py-32"
     >
+      {/* Cursor spotlight — wide soft rose halo following the cursor.
+          Anchored at top/left, then centered on the cursor with -50%
+          translate. Spring-smoothed so motion feels gentle, not jittery. */}
+      {!reduce && (
+        <motion.div
+          aria-hidden
+          style={{
+            left: spotX,
+            top: spotY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+          className="pointer-events-none absolute -z-10 h-[520px] w-[520px] rounded-full bg-(--color-rose)/15 opacity-60 blur-3xl"
+        />
+      )}
+
       {/* Background depth layers — concentric rings on the right and a soft
           champagne halo on the left, each drifting at different speeds. */}
       <motion.div
@@ -97,8 +126,7 @@ export function How() {
               1. Static thin track (subtle border colour) — the "rail".
               2. Animated colored line drawn top-to-bottom on scroll — the
                  "ink" being laid down.
-              3. Glowing comet at the leading edge, with two shadow layers
-                 for a soft + harsh halo. */}
+              3. Glowing comet at the leading edge, four-layer glow stack. */}
           <div className="absolute left-[31px] top-2 hidden h-full w-[2px] bg-(--color-border)/60 sm:left-[39px] md:block">
             <motion.div
               style={{ height: lineHeight }}
@@ -107,52 +135,32 @@ export function How() {
             {!reduce && (
               <motion.div
                 aria-hidden
-                style={{
-                  top: cometTop,
-                  opacity: cometOpacity,
-                }}
+                style={{ top: cometTop, opacity: cometOpacity }}
                 className="absolute left-1/2 z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2"
               >
-                {/* Wide outer glow — most of the visual weight */}
                 <span className="absolute inset-0 -m-6 rounded-full bg-(--color-rose) opacity-60 blur-xl" />
-                {/* Mid halo */}
                 <span className="absolute inset-0 -m-3 rounded-full bg-(--color-primary)/60 blur-md" />
-                {/* Hard core dot */}
                 <span className="absolute inset-0 rounded-full bg-(--color-primary) shadow-[0_0_12px_var(--color-primary)]" />
-                {/* Specular highlight */}
                 <span className="absolute inset-1 rounded-full bg-white/70" />
               </motion.div>
             )}
           </div>
 
           <ol className="flex flex-col gap-10 md:gap-14">
-            {steps.map((i, idx) => {
-              const Icon = ICONS[idx];
-              return (
-                <ParallaxY key={i} strength={STEP_STRENGTHS[idx]}>
-                  <Reveal delay={idx}>
-                    <li className="grid grid-cols-[64px_1fr] items-start gap-4 sm:grid-cols-[80px_1fr] sm:gap-6">
-                      <StepBadge
-                        Icon={Icon}
-                        number={i}
-                        activation={STEP_ACTIVATIONS[idx]}
-                        progress={scrollYProgress}
-                        reduce={reduce ?? false}
-                      />
-
-                      <div className="pt-1 sm:pt-2">
-                        <h3 className="mb-2 heading-display-md">
-                          {t(`step${i}Title` as "step1Title")}
-                        </h3>
-                        <p className="max-w-xl text-pretty text-(--color-muted-foreground)">
-                          {t(`step${i}Desc` as "step1Desc")}
-                        </p>
-                      </div>
-                    </li>
-                  </Reveal>
-                </ParallaxY>
-              );
-            })}
+            {steps.map((i, idx) => (
+              <li key={i}>
+                <Step
+                  index={idx}
+                  number={i}
+                  Icon={ICONS[idx]}
+                  title={t(`step${i}Title` as "step1Title")}
+                  desc={t(`step${i}Desc` as "step1Desc")}
+                  activation={STEP_ACTIVATIONS[idx]}
+                  progress={scrollYProgress}
+                  reduce={reduce ?? false}
+                />
+              </li>
+            ))}
           </ol>
         </div>
       </div>
@@ -161,10 +169,96 @@ export function How() {
 }
 
 /**
+ * Step — a single timeline row that:
+ *   • Slides in from alternating sides (odd index = right, even = left) as
+ *     it enters the viewport, with a scale-up + rotate + de-blur transition
+ *     driven by its OWN scrollYProgress (not the section's).
+ *   • Wraps content in MouseTilt for a subtle 3D tilt on hover.
+ *   • Hosts a StepBadge that lights up via section-wide scroll progress.
+ */
+function Step({
+  index,
+  number,
+  Icon,
+  title,
+  desc,
+  activation,
+  progress,
+  reduce,
+}: {
+  index: number;
+  number: number;
+  Icon: (typeof ICONS)[number];
+  title: string;
+  desc: string;
+  activation: number;
+  progress: MotionValue<number>;
+  reduce: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: stepProgress } = useScroll({
+    target: ref,
+    offset: ["start 95%", "start 35%"],
+  });
+
+  const isOdd = index % 2 === 1;
+  const fromX = isOdd ? 140 : -140;
+  const fromRotate = isOdd ? 4 : -4;
+
+  const x = useTransform(stepProgress, [0, 1], [fromX, 0]);
+  const opacity = useTransform(stepProgress, [0, 0.5, 1], [0, 0.6, 1]);
+  const scale = useTransform(stepProgress, [0, 1], [0.82, 1]);
+  const rotate = useTransform(stepProgress, [0, 1], [fromRotate, 0]);
+  const filter = useTransform(
+    stepProgress,
+    [0, 0.5, 1],
+    ["blur(10px)", "blur(3px)", "blur(0px)"],
+  );
+
+  return (
+    <motion.div
+      ref={ref}
+      style={
+        reduce
+          ? undefined
+          : {
+              x,
+              opacity,
+              scale,
+              rotate,
+              filter,
+            }
+      }
+    >
+      <MouseTilt intensity={4} perspective={1200}>
+        <div className="grid grid-cols-[64px_1fr] items-start gap-4 sm:grid-cols-[80px_1fr] sm:gap-6">
+          <StepBadge
+            Icon={Icon}
+            number={number}
+            activation={activation}
+            progress={progress}
+            reduce={reduce}
+          />
+
+          <div
+            className="pt-1 sm:pt-2"
+            style={{ transform: "translateZ(30px)" }}
+          >
+            <h3 className="mb-2 heading-display-md">{title}</h3>
+            <p className="max-w-xl text-pretty text-(--color-muted-foreground)">
+              {desc}
+            </p>
+          </div>
+        </div>
+      </MouseTilt>
+    </motion.div>
+  );
+}
+
+/**
  * StepBadge — circle with icon + number bubble. Lights up with a pulse ring,
  * a soft scale-up and a glow halo when the scroll progress passes its
- * activation threshold. Stays lit once reached, so the timeline reads as
- * "checkpoints you've already walked past stay marked".
+ * activation threshold. Stays lit once reached.
  */
 function StepBadge({
   Icon,
@@ -179,9 +273,6 @@ function StepBadge({
   progress: MotionValue<number>;
   reduce: boolean;
 }) {
-  // 0 → 1 across a 0.18-wide range centred on the activation point. Motion
-  // clamps the output at the input boundaries by default, so once lit the
-  // step stays lit through the rest of the scroll.
   const lit = useTransform(
     progress,
     [activation - 0.12, activation + 0.06],
@@ -196,10 +287,12 @@ function StepBadge({
     <motion.div
       whileHover={{ rotate: -3 }}
       transition={{ type: "spring", stiffness: 280, damping: 18 }}
-      style={{ scale: reduce ? 1 : scale }}
+      style={{
+        scale: reduce ? 1 : scale,
+        transform: "translateZ(50px)",
+      }}
       className="relative grid h-16 w-16 place-items-center rounded-full bg-white shadow-(--shadow-soft) sm:h-20 sm:w-20"
     >
-      {/* Soft glow halo behind the circle, lights up on activation */}
       {!reduce && (
         <motion.span
           aria-hidden
@@ -208,7 +301,6 @@ function StepBadge({
         />
       )}
 
-      {/* Pulse ring — radiates outward once at activation */}
       {!reduce && (
         <motion.span
           aria-hidden

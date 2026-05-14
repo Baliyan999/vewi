@@ -12,30 +12,30 @@ import { FloatingOrnaments } from "./parallax";
 
 /**
  * StickyHeadline — three short phrases that crossfade as the user scrolls
- * past a pinned section. Rebuild notes:
+ * past a pinned section. Each phrase has both a TEXT layer and a VISUAL
+ * layer (photo-card composition) that animate together. The visual layout
+ * differs per phrase to reinforce the meaning:
+ *   1. "Каждый кадр"        → one large photo card  (the moment)
+ *   2. "от каждого гостя"   → three fanned cards    (contributions)
+ *   3. "в одном альбоме"    → grid of small cards   (the album)
  *
- *   • The accent word is rendered with a SOLID color, not a CSS gradient
- *     clipped to text. background-clip:text + italic Cyrillic descenders
- *     ("р", "д") was an endless yak-shave: even at line-height 3 the
- *     gradient paint area didn't always cover the deepest glyph tips on
- *     some Chrome builds. A solid color paints the entire glyph natively
- *     with no clip-box involved, so the problem disappears entirely.
- *
- *   • Phrase animation is now pure opacity + small Y slide. No blur, no
- *     scale — those were piling complexity without payoff and the blur in
- *     particular added a fraction of perceived blurriness even at rest.
- *
- *   • Sticky pin window math kept: section is 130vh tall, sticky child is
- *     70vh, so progress 0→1 maps exactly onto the 60vh of scroll during
- *     which the pin holds. No trailing empty pinned area, no overshoot.
+ * Notes:
+ *   • Accent word renders with --color-primary, NOT background-clip:text,
+ *     to avoid italic Cyrillic descender clipping.
+ *   • Animation is opacity + small Y slide, shared by text and visual so
+ *     they enter/leave as a single visual unit.
+ *   • Pin window is 210vh (section 280vh − sticky child 70vh), so each of
+ *     the three phrases gets ~750px of scroll → a single hard swipe can't
+ *     cycle through all of them.
  */
 
-type Phrase = { before: string; accent: string; after?: string };
+type Visual = "single" | "fan" | "grid";
+type Phrase = { before: string; accent: string; after?: string; visual: Visual };
 
 const PHRASES: readonly Phrase[] = [
-  { before: "Каждый", accent: "кадр" },
-  { before: "от", accent: "каждого", after: "гостя" },
-  { before: "в", accent: "одном", after: "альбоме" },
+  { before: "Каждый", accent: "кадр", visual: "single" },
+  { before: "от", accent: "каждого", after: "гостя", visual: "fan" },
+  { before: "в", accent: "одном", after: "альбоме", visual: "grid" },
 ] as const;
 
 export function StickyHeadline() {
@@ -43,10 +43,6 @@ export function StickyHeadline() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
-    // Section is 280vh and the sticky child is 70vh, so the pin window
-    // is 210vh — that's the scroll distance over which all three
-    // phrases cross-fade. ~2270px on a 1080 viewport, ~750px per phrase,
-    // so a single hard trackpad swipe can't blow past all of them.
     offset: ["start start", "start -210%"],
   });
 
@@ -55,24 +51,29 @@ export function StickyHeadline() {
       <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-x-clip">
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
-        <div className="container-page relative text-center">
-          {PHRASES.map((phrase, i) => (
-            <PhraseLine
-              key={i}
-              index={i}
-              total={PHRASES.length}
-              progress={scrollYProgress}
-              reduce={reduce ?? false}
-              phrase={phrase}
-            />
-          ))}
+        <div className="container-page relative w-full">
+          {/* All three phrases share one stage. Each is absolute inset-0
+              inside this wrapper so they stack on top of each other —
+              only one is opaque at a time per scroll progress. */}
+          <div className="relative mx-auto h-[60vh] max-w-5xl">
+            {PHRASES.map((p, i) => (
+              <PhraseLayer
+                key={i}
+                index={i}
+                total={PHRASES.length}
+                progress={scrollYProgress}
+                reduce={reduce ?? false}
+                phrase={p}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function PhraseLine({
+function PhraseLayer({
   index,
   total,
   progress,
@@ -90,10 +91,7 @@ function PhraseLine({
   const end = start + span;
   const isFirst = index === 0;
 
-  // 30% enter / 40% hold / 30% exit. Longer fades than before so the
-  // transition between phrases reads as a deliberate slow crossfade
-  // rather than a quick swap, especially over the now-wider 210vh
-  // pin window where each phrase spans ~750px of scroll.
+  // 30% enter / 40% hold / 30% exit, ease-in-out for a slow crossfade.
   const ENTER = span * 0.3;
   const EXIT = span * 0.3;
   const inputs = isFirst
@@ -115,23 +113,134 @@ function PhraseLine({
   );
 
   return (
-    <motion.h2
+    <motion.div
       style={{
         opacity: reduce ? (index === 1 ? 1 : 0) : opacity,
         y: reduce ? 0 : y,
       }}
-      className="absolute inset-x-0 mx-auto font-display text-5xl leading-tight md:text-7xl lg:text-8xl"
+      className="absolute inset-0 flex flex-col items-center justify-center gap-10 md:gap-14"
     >
-      <span className="text-(--color-foreground)">{phrase.before}</span>{" "}
-      <span className="italic font-medium text-(--color-primary)">
-        {phrase.accent}
-      </span>
-      {phrase.after ? (
-        <>
-          {" "}
-          <span className="text-(--color-foreground)">{phrase.after}</span>
-        </>
-      ) : null}
-    </motion.h2>
+      <h2 className="font-display text-5xl leading-tight md:text-7xl lg:text-8xl">
+        <span className="text-(--color-foreground)">{phrase.before}</span>{" "}
+        <span className="italic font-medium text-(--color-primary)">
+          {phrase.accent}
+        </span>
+        {phrase.after ? (
+          <>
+            {" "}
+            <span className="text-(--color-foreground)">{phrase.after}</span>
+          </>
+        ) : null}
+      </h2>
+
+      <PhraseVisual variant={phrase.visual} />
+    </motion.div>
+  );
+}
+
+// --- Visual scenes ---------------------------------------------------------
+// Each scene renders an array of "photo cards" — white-bordered tiles with
+// a warm gradient inside, simulating wedding snapshots. Easy to swap to
+// real <img> sources later.
+
+function PhraseVisual({ variant }: { variant: Visual }) {
+  if (variant === "single") return <VisualSingle />;
+  if (variant === "fan") return <VisualFan />;
+  return <VisualGrid />;
+}
+
+function PhotoCard({
+  hue,
+  rotate = 0,
+  className = "",
+  intensity = 0.08,
+}: {
+  hue: number;
+  rotate?: number;
+  className?: string;
+  intensity?: number;
+}) {
+  return (
+    <div
+      className={`relative rounded-2xl bg-white p-2 shadow-(--shadow-soft) ${className}`}
+      style={{ transform: rotate ? `rotate(${rotate}deg)` : undefined }}
+    >
+      <div
+        className="h-full w-full rounded-xl"
+        style={{
+          background: `linear-gradient(135deg,
+            oklch(85% ${intensity} ${hue}) 0%,
+            oklch(92% ${intensity * 0.7} ${hue + 25}) 55%,
+            oklch(80% ${intensity * 1.3} ${hue - 10}) 100%)`,
+        }}
+      />
+    </div>
+  );
+}
+
+function VisualSingle() {
+  return (
+    <div className="relative">
+      <PhotoCard
+        hue={30}
+        rotate={-3}
+        intensity={0.1}
+        className="h-64 w-52 md:h-80 md:w-64 lg:h-[22rem] lg:w-72"
+      />
+    </div>
+  );
+}
+
+function VisualFan() {
+  // Five overlapping cards spread across an arc. Center card sits forward;
+  // outer cards angle further from the spine.
+  const cards = [
+    { hue: 15, rot: -18, x: -2.2, z: 1, size: "h-44 w-32 md:h-56 md:w-40" },
+    { hue: 40, rot: -9, x: -1.05, z: 2, size: "h-48 w-36 md:h-60 md:w-44" },
+    { hue: 60, rot: 0, x: 0, z: 3, size: "h-52 w-40 md:h-64 md:w-48", intensity: 0.1 },
+    { hue: 80, rot: 9, x: 1.05, z: 2, size: "h-48 w-36 md:h-60 md:w-44" },
+    { hue: 100, rot: 18, x: 2.2, z: 1, size: "h-44 w-32 md:h-56 md:w-40" },
+  ];
+  return (
+    <div className="relative h-52 w-[420px] md:h-64 md:w-[560px]">
+      {cards.map((c, i) => (
+        <div
+          key={i}
+          className="absolute left-1/2 top-0"
+          style={{
+            transform: `translateX(calc(-50% + ${c.x * 70}px))`,
+            zIndex: c.z,
+          }}
+        >
+          <PhotoCard
+            hue={c.hue}
+            rotate={c.rot}
+            className={c.size}
+            intensity={c.intensity ?? 0.08}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VisualGrid() {
+  // 12-card grid in 6 columns — a finished album spread. Each tile is
+  // slightly rotated for a "laid out by hand" feel.
+  const cards = Array.from({ length: 12 }, (_, i) => ({
+    hue: 10 + ((i * 23) % 80),
+    rotate: ((i % 4) - 1.5) * 2.5,
+  }));
+  return (
+    <div className="grid w-[380px] grid-cols-6 gap-2 md:w-[560px] md:gap-3">
+      {cards.map((c, i) => (
+        <PhotoCard
+          key={i}
+          hue={c.hue}
+          rotate={c.rotate}
+          className="aspect-[3/4]"
+        />
+      ))}
+    </div>
   );
 }

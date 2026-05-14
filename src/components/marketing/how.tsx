@@ -2,14 +2,26 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+} from "motion/react";
 import { QrCode, Camera, Heart } from "lucide-react";
 import { Reveal } from "./reveal";
 import { ParallaxY, FloatingOrnaments } from "./parallax";
 import { Rings } from "./ornaments";
 
 const ICONS = [QrCode, Camera, Heart] as const;
-const STEP_STRENGTHS = [0.05, -0.04, 0.06] as const;
+// Strength of the per-step Y parallax — odd-indexed steps drift up slightly
+// for an asymmetric, "alive" feel as the user scrolls past.
+const STEP_STRENGTHS = [0.08, -0.06, 0.09] as const;
+// Each step "ignites" (gets a pulse ring + scale-up) when scrollYProgress
+// reaches this value. Distributed so steps light up one after another in
+// rhythm with the user passing them on-screen.
+const STEP_ACTIVATIONS = [0.18, 0.5, 0.82] as const;
 
 export function How() {
   const t = useTranslations("how");
@@ -20,10 +32,22 @@ export function How() {
     offset: ["start 80%", "end 30%"],
   });
 
+  // Master scroll-driven motion values. The line grows top-to-bottom in
+  // sync with section progress; a glowing comet rides the leading edge.
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-  const ringsY = useTransform(scrollYProgress, [0, 1], ["-15%", "30%"]);
-  const ringsRotate = useTransform(scrollYProgress, [0, 1], [-8, 6]);
-  const titleY = useTransform(scrollYProgress, [0, 1], ["20%", "-10%"]);
+  const cometTop = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const cometOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.05, 0.95, 1],
+    [0, 1, 1, 0],
+  );
+
+  // Background parallax — rings drift further than the title, title floats
+  // gently against them for depth.
+  const ringsY = useTransform(scrollYProgress, [0, 1], ["-20%", "40%"]);
+  const ringsRotate = useTransform(scrollYProgress, [0, 1], [-12, 10]);
+  const haloY = useTransform(scrollYProgress, [0, 1], ["30%", "-20%"]);
+  const titleY = useTransform(scrollYProgress, [0, 1], ["25%", "-12%"]);
 
   const steps = [1, 2, 3] as const;
 
@@ -31,8 +55,10 @@ export function How() {
     <section
       id="how"
       ref={sectionRef}
-      className="relative overflow-hidden py-24 md:py-32"
+      className="relative overflow-hidden py-20 md:py-32"
     >
+      {/* Background depth layers — concentric rings on the right and a soft
+          champagne halo on the left, each drifting at different speeds. */}
       <motion.div
         aria-hidden
         style={{
@@ -43,51 +69,82 @@ export function How() {
       >
         <Rings size={720} />
       </motion.div>
+      <motion.div
+        aria-hidden
+        style={{ y: reduce ? 0 : haloY }}
+        className="pointer-events-none absolute -left-40 top-1/3 -z-10 h-[520px] w-[520px] rounded-full bg-(--color-champagne)/30 blur-3xl"
+      />
+      <motion.div
+        aria-hidden
+        style={{ y: reduce ? 0 : ringsY }}
+        className="pointer-events-none absolute right-1/4 -bottom-20 -z-10 h-[420px] w-[420px] rounded-full bg-(--color-rose)/25 blur-3xl"
+      />
 
-      <FloatingOrnaments count={10} hueBase={25} />
+      <FloatingOrnaments count={14} hueBase={25} hueSpread={70} />
 
       <div className="container-page relative">
         <motion.div style={{ y: reduce ? 0 : titleY }}>
-          <Reveal className="mx-auto mb-20 max-w-2xl text-center">
-            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-(--color-primary)">
+          <Reveal className="mx-auto mb-14 max-w-2xl text-center md:mb-20">
+            <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-(--color-primary) sm:text-xs">
               ⋄ ⋄ ⋄
             </p>
-            <h2 className="text-balance text-4xl md:text-5xl">{t("title")}</h2>
+            <h2 className="heading-display-lg text-balance">{t("title")}</h2>
           </Reveal>
         </motion.div>
 
         <div className="relative mx-auto max-w-4xl">
-          <div className="absolute left-[39px] top-2 hidden h-full w-px bg-(--color-border) md:block">
+          {/* Vertical timeline. Three layers stacked:
+              1. Static thin track (subtle border colour) — the "rail".
+              2. Animated colored line drawn top-to-bottom on scroll — the
+                 "ink" being laid down.
+              3. Glowing comet at the leading edge, with two shadow layers
+                 for a soft + harsh halo. */}
+          <div className="absolute left-[31px] top-2 hidden h-full w-[2px] bg-(--color-border)/60 sm:left-[39px] md:block">
             <motion.div
               style={{ height: lineHeight }}
               className="w-full origin-top bg-gradient-to-b from-(--color-primary) via-(--color-rose) to-(--color-champagne)"
             />
+            {!reduce && (
+              <motion.div
+                aria-hidden
+                style={{
+                  top: cometTop,
+                  opacity: cometOpacity,
+                }}
+                className="absolute left-1/2 z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2"
+              >
+                {/* Wide outer glow — most of the visual weight */}
+                <span className="absolute inset-0 -m-6 rounded-full bg-(--color-rose) opacity-60 blur-xl" />
+                {/* Mid halo */}
+                <span className="absolute inset-0 -m-3 rounded-full bg-(--color-primary)/60 blur-md" />
+                {/* Hard core dot */}
+                <span className="absolute inset-0 rounded-full bg-(--color-primary) shadow-[0_0_12px_var(--color-primary)]" />
+                {/* Specular highlight */}
+                <span className="absolute inset-1 rounded-full bg-white/70" />
+              </motion.div>
+            )}
           </div>
 
-          <ol className="flex flex-col gap-14">
+          <ol className="flex flex-col gap-10 md:gap-14">
             {steps.map((i, idx) => {
               const Icon = ICONS[idx];
               return (
                 <ParallaxY key={i} strength={STEP_STRENGTHS[idx]}>
                   <Reveal delay={idx}>
-                    <li className="grid grid-cols-[80px_1fr] items-start gap-6">
-                      <motion.div
-                        whileHover={{ scale: 1.05, rotate: -2 }}
-                        transition={{ type: "spring", stiffness: 280, damping: 18 }}
-                        className="relative grid h-20 w-20 place-items-center rounded-full bg-white shadow-(--shadow-soft)"
-                        style={{ border: "1px solid oklch(92% 0.015 70)" }}
-                      >
-                        <Icon className="h-7 w-7 text-(--color-primary)" strokeWidth={1.5} />
-                        <span className="absolute -right-1 -top-1 grid h-7 w-7 place-items-center rounded-full bg-(--color-primary) text-xs text-(--color-primary-foreground) font-semibold">
-                          {i}
-                        </span>
-                      </motion.div>
+                    <li className="grid grid-cols-[64px_1fr] items-start gap-4 sm:grid-cols-[80px_1fr] sm:gap-6">
+                      <StepBadge
+                        Icon={Icon}
+                        number={i}
+                        activation={STEP_ACTIVATIONS[idx]}
+                        progress={scrollYProgress}
+                        reduce={reduce ?? false}
+                      />
 
-                      <div className="pt-2">
-                        <h3 className="mb-2 text-2xl md:text-3xl">
+                      <div className="pt-1 sm:pt-2">
+                        <h3 className="mb-2 heading-display-md">
                           {t(`step${i}Title` as "step1Title")}
                         </h3>
-                        <p className="max-w-xl text-(--color-muted-foreground)">
+                        <p className="max-w-xl text-pretty text-(--color-muted-foreground)">
                           {t(`step${i}Desc` as "step1Desc")}
                         </p>
                       </div>
@@ -100,5 +157,78 @@ export function How() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * StepBadge — circle with icon + number bubble. Lights up with a pulse ring,
+ * a soft scale-up and a glow halo when the scroll progress passes its
+ * activation threshold. Stays lit once reached, so the timeline reads as
+ * "checkpoints you've already walked past stay marked".
+ */
+function StepBadge({
+  Icon,
+  number,
+  activation,
+  progress,
+  reduce,
+}: {
+  Icon: (typeof ICONS)[number];
+  number: number;
+  activation: number;
+  progress: MotionValue<number>;
+  reduce: boolean;
+}) {
+  // 0 → 1 across a 0.18-wide range centred on the activation point. Motion
+  // clamps the output at the input boundaries by default, so once lit the
+  // step stays lit through the rest of the scroll.
+  const lit = useTransform(
+    progress,
+    [activation - 0.12, activation + 0.06],
+    [0, 1],
+  );
+  const scale = useTransform(lit, [0, 1], [1, 1.08]);
+  const haloOpacity = useTransform(lit, [0, 1], [0, 0.8]);
+  const ringOpacity = useTransform(lit, [0, 0.5, 1], [0, 0.7, 0]);
+  const ringScale = useTransform(lit, [0, 1], [0.6, 1.6]);
+
+  return (
+    <motion.div
+      whileHover={{ rotate: -3 }}
+      transition={{ type: "spring", stiffness: 280, damping: 18 }}
+      style={{ scale: reduce ? 1 : scale }}
+      className="relative grid h-16 w-16 place-items-center rounded-full bg-white shadow-(--shadow-soft) sm:h-20 sm:w-20"
+    >
+      {/* Soft glow halo behind the circle, lights up on activation */}
+      {!reduce && (
+        <motion.span
+          aria-hidden
+          style={{ opacity: haloOpacity }}
+          className="pointer-events-none absolute inset-0 -m-4 rounded-full bg-(--color-primary)/30 blur-xl"
+        />
+      )}
+
+      {/* Pulse ring — radiates outward once at activation */}
+      {!reduce && (
+        <motion.span
+          aria-hidden
+          style={{ opacity: ringOpacity, scale: ringScale }}
+          className="pointer-events-none absolute inset-0 rounded-full border-2 border-(--color-primary)"
+        />
+      )}
+
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-full"
+        style={{ border: "1px solid oklch(92% 0.015 70)" }}
+      />
+      <Icon
+        className="relative h-6 w-6 text-(--color-primary) sm:h-7 sm:w-7"
+        strokeWidth={1.5}
+      />
+      <span className="absolute -right-1 -top-1 z-10 grid h-6 w-6 place-items-center rounded-full bg-(--color-primary) text-[11px] font-semibold text-(--color-primary-foreground) shadow-(--shadow-soft) sm:h-7 sm:w-7 sm:text-xs">
+        {number}
+      </span>
+    </motion.div>
   );
 }

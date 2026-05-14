@@ -44,10 +44,6 @@ export function GalleryPreview() {
     <section
       ref={ref}
       className="relative overflow-hidden py-24 md:py-32"
-      style={{
-        background:
-          "linear-gradient(180deg, oklch(98% 0.012 80) 0%, oklch(95% 0.025 70) 100%)",
-      }}
     >
       <div className="pointer-events-none absolute inset-0 opacity-50 blur-sm">
         {BACK_TILES.map((tile, i) => (

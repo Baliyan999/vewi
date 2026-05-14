@@ -16,11 +16,7 @@ export function Features() {
   return (
     <section
       id="features"
-      className="relative overflow-hidden border-y border-(--color-border)/70 py-24 md:py-32"
-      style={{
-        background:
-          "linear-gradient(180deg, oklch(96% 0.018 75) 0%, oklch(98% 0.012 80) 100%)",
-      }}
+      className="relative overflow-hidden py-24 md:py-32"
     >
       <DriftingOrbs variant="mix" />
       <FloatingOrnaments count={18} hueBase={20} hueSpread={70} />

@@ -87,7 +87,12 @@ export function GalleryPreview() {
     <section
       ref={ref}
       onMouseMove={reduce ? undefined : onMove}
-      className="relative overflow-hidden py-24 md:py-32"
+      // overflow-x-clip (not overflow-hidden) — decorative back-tiles,
+      // cursor spotlight and ornaments are allowed to bleed vertically
+      // into the next section, so the warm tint fades smoothly into the
+      // Features section's own overlays instead of cutting off as a
+      // visible horizontal seam at the section boundary.
+      className="relative overflow-x-clip py-24 md:py-32"
     >
       {/* Cursor spotlight — soft champagne halo following the cursor. */}
       {!reduce && (

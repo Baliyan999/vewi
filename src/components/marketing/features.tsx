@@ -16,21 +16,27 @@ export function Features() {
   return (
     <section
       id="features"
-      className="relative overflow-hidden py-24 md:py-32"
+      // overflow-x-clip lets the DriftingOrbs at the top edge of this
+      // section blend with whatever decoration is bleeding out of the
+      // section above (GalleryPreview's back-tiles), removing the
+      // horizontal seam that was visible at the boundary.
+      className="relative overflow-x-clip py-20 md:py-32"
     >
       <DriftingOrbs variant="mix" />
       <FloatingOrnaments count={18} hueBase={20} hueSpread={70} />
 
       <div className="container-page relative">
-        <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-(--color-primary)">
+        <Reveal className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
+          <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-(--color-primary) sm:text-xs">
             ⋄ ⋄ ⋄
           </p>
-          <h2 className="mb-4 text-4xl md:text-5xl">{t("title")}</h2>
-          <p className="text-(--color-muted-foreground)">{t("subtitle")}</p>
+          <h2 className="heading-display-lg mb-4">{t("title")}</h2>
+          <p className="text-pretty text-base text-(--color-muted-foreground) sm:text-lg">
+            {t("subtitle")}
+          </p>
         </Reveal>
 
-        <Stagger className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" step={0.07}>
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" step={0.07}>
           {items.map((i) => {
             const Icon = icons[i - 1];
             return (
@@ -82,7 +88,7 @@ function FeatureCard({
       }}
       whileHover={{ scale: 1.015 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
-      className="surface-card group relative h-full overflow-hidden rounded-(--radius-lg) p-7"
+      className="surface-card group relative h-full overflow-hidden rounded-(--radius-lg) p-5 sm:p-7"
     >
       <div
         aria-hidden
@@ -106,13 +112,13 @@ function FeatureCard({
         {icon}
       </div>
       <h3
-        className="relative mb-2 text-2xl"
+        className="relative mb-2 text-xl md:text-2xl"
         style={{ transform: "translateZ(20px)" }}
       >
         {title}
       </h3>
       <p
-        className="relative text-sm text-(--color-muted-foreground)"
+        className="relative text-sm leading-relaxed text-(--color-muted-foreground)"
         style={{ transform: "translateZ(10px)" }}
       >
         {desc}

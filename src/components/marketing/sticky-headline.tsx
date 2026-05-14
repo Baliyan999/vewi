@@ -139,7 +139,13 @@ function Phrase({
       {words.map((w, i) => (
         <span key={i} className="mr-[0.3em] inline-block">
           {i === Math.floor(words.length / 2) ? (
-            <span className="text-gradient-gold italic">{w}</span>
+            // background-clip:text paints the gradient inside the padding-box.
+            // Italic Cyrillic descenders ("р", "д", "ц") poke below it, so
+            // those bits render transparent and look "cut". inline-block +
+            // py-[0.18em] grows the box just enough to cover the full glyph.
+            <span className="text-gradient-gold italic inline-block py-[0.18em] -my-[0.18em] leading-[1]">
+              {w}
+            </span>
           ) : (
             w
           )}

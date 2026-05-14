@@ -42,9 +42,13 @@
   }
 
   body {
+    /* Three soft radial washes spanning the viewport so the warm ivory
+     * tint covers the whole screen instead of fading out around 50%
+     * height and creating a visible horizontal band. */
     background-image:
-      radial-gradient(ellipse 1200px 600px at 10% -10%, oklch(90% 0.05 25 / 0.35), transparent 60%),
-      radial-gradient(ellipse 900px 600px at 100% 20%, oklch(90% 0.05 80 / 0.35), transparent 60%);
+      radial-gradient(ellipse 1800px 1400px at 0% 0%,    oklch(90% 0.05 25 / 0.32), transparent 75%),
+      radial-gradient(ellipse 1600px 1400px at 100% 20%, oklch(90% 0.05 80 / 0.30), transparent 75%),
+      radial-gradient(ellipse 1800px 1200px at 50% 110%, oklch(92% 0.045 55 / 0.28), transparent 75%);
     background-attachment: fixed;
   }
 

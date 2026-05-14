@@ -253,6 +253,17 @@ function ParallaxTile({
     [0, 0.3, 1],
   );
 
+  // Hover-variant trick: detect hover on the OUTER motion.div (whose
+  // bounding box stays exactly the same during the interaction, because
+  // its only transforms are scroll-driven, not hover-driven), then
+  // propagate "hover" via variants down to the inner element which does
+  // the visual lift. If we put whileHover on the inner motion.div, its
+  // transform (y: -8, scale: 1.08) would push it out from under the
+  // cursor — hover ends, transform reverts, cursor re-enters, hover
+  // restarts, and you get a jitter loop. Detecting on the outer breaks
+  // the feedback because the outer never moves on hover.
+  const tiltOnHover = tile.rot < 0 ? 1 : -1;
+
   return (
     <motion.div
       style={{
@@ -268,17 +279,27 @@ function ParallaxTile({
         transformStyle: "preserve-3d",
       }}
       className="absolute"
+      whileHover="hover"
+      initial="rest"
+      animate="rest"
     >
       <motion.div
-        whileHover={{
-          scale: 1.08,
-          rotate: tile.rot < 0 ? 1 : -1,
-          y: -8,
-          zIndex: 30,
-          boxShadow: "0 30px 60px -15px rgb(180 130 100 / 0.4)",
+        variants={{
+          rest: {
+            scale: 1,
+            y: 0,
+            rotate: 0,
+            boxShadow: "var(--shadow-soft)",
+          },
+          hover: {
+            scale: 1.08,
+            y: -8,
+            rotate: tiltOnHover,
+            boxShadow: "0 30px 60px -15px rgb(180 130 100 / 0.4)",
+          },
         }}
-        transition={{ type: "spring", stiffness: 250, damping: 18 }}
-        className="group relative h-full w-full overflow-hidden rounded-(--radius-md) bg-white p-2 shadow-(--shadow-soft)"
+        transition={{ type: "spring", stiffness: 220, damping: 22 }}
+        className="group relative h-full w-full overflow-hidden rounded-(--radius-md) bg-white p-2"
         style={{
           border: "1px solid oklch(94% 0.015 70)",
         }}

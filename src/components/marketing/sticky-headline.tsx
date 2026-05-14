@@ -141,10 +141,23 @@ function Phrase({
             // those bits render transparent and look "cut". inline-block +
             // py-[0.18em] grows the box just enough to cover the full glyph.
             <span
-              className="text-gradient-gold italic inline-block leading-[2]"
+              className="text-gradient-gold italic inline-block leading-[3]"
               style={{
-                paddingBlock: "1.2em",
-                marginBlock: "-1.2em",
+                // We learned the hard way: padding does NOT extend the
+                // background-clip:text paint area. The gradient is
+                // clipped to the inline LINE-BOX (line-height × font-
+                // size), not to the padding-box. Italic Cyrillic
+                // descenders ("р", "д") extend below the line-box for
+                // line-height < ~2.5, so their bottom tips render
+                // transparent — what looks like the glyph being "cut
+                // flat" at a horizontal line. Fix: a tall line-height
+                // (3) gives the line-box enough room to contain the
+                // full descender, so background-clip:text paints the
+                // whole glyph. No padding hack needed.
+                //
+                // inline-block + vertical-align: baseline means the
+                // taller line-box doesn't push neighbouring words
+                // around — they still share the same text baseline.
               }}
             >
               {w}

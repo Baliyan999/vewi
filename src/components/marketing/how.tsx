@@ -10,6 +10,7 @@ import {
   useMotionValue,
   useSpring,
   type MotionValue,
+  type Variants,
 } from "motion/react";
 import { QrCode, Camera, Heart } from "lucide-react";
 import { Reveal } from "./reveal";
@@ -113,12 +114,18 @@ export function How() {
 
       <div className="container-page relative">
         <motion.div style={{ y: reduce ? 0 : titleY }}>
-          <Reveal className="mx-auto mb-14 max-w-2xl text-center md:mb-20">
-            <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-(--color-primary) sm:text-xs">
+          <div className="mx-auto mb-14 max-w-2xl text-center md:mb-20">
+            <motion.p
+              initial={{ opacity: 0, letterSpacing: "0.5em" }}
+              whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-3 text-[10px] uppercase text-(--color-primary) sm:text-xs"
+            >
               ⋄ ⋄ ⋄
-            </p>
-            <h2 className="heading-display-lg text-balance">{t("title")}</h2>
-          </Reveal>
+            </motion.p>
+            <TitleReveal text={t("title")} />
+          </div>
         </motion.div>
 
         <div className="relative mx-auto max-w-4xl">
@@ -133,16 +140,25 @@ export function How() {
               className="w-full origin-top bg-gradient-to-b from-(--color-primary) via-(--color-rose) to-(--color-champagne)"
             />
             {!reduce && (
-              <motion.div
-                aria-hidden
-                style={{ top: cometTop, opacity: cometOpacity }}
-                className="absolute left-1/2 z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2"
-              >
-                <span className="absolute inset-0 -m-6 rounded-full bg-(--color-rose) opacity-60 blur-xl" />
-                <span className="absolute inset-0 -m-3 rounded-full bg-(--color-primary)/60 blur-md" />
-                <span className="absolute inset-0 rounded-full bg-(--color-primary) shadow-[0_0_12px_var(--color-primary)]" />
-                <span className="absolute inset-1 rounded-full bg-white/70" />
-              </motion.div>
+              <>
+                {/* Sparkle trail — three smaller fading dots above the comet,
+                    each offset upward and gradually shrinking + dimming, so
+                    visually it reads as "particles being left behind" as the
+                    comet moves down the timeline. */}
+                <CometTrail cometTop={cometTop} opacity={cometOpacity} />
+
+                {/* Main comet — four-layer glow stack at the leading edge. */}
+                <motion.div
+                  aria-hidden
+                  style={{ top: cometTop, opacity: cometOpacity }}
+                  className="absolute left-1/2 z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2"
+                >
+                  <span className="absolute inset-0 -m-6 rounded-full bg-(--color-rose) opacity-60 blur-xl" />
+                  <span className="absolute inset-0 -m-3 rounded-full bg-(--color-primary)/60 blur-md" />
+                  <span className="absolute inset-0 rounded-full bg-(--color-primary) shadow-[0_0_12px_var(--color-primary)]" />
+                  <span className="absolute inset-1 rounded-full bg-white/70" />
+                </motion.div>
+              </>
             )}
           </div>
 
@@ -198,27 +214,23 @@ function Step({
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress: stepProgress } = useScroll({
     target: ref,
-    // Tight reveal window — animation runs only while the step's top is
-    // travelling through the bottom quarter of the viewport. By the time
-    // the step is past mid-screen the animation is long done, so when
-    // the section title reaches the top of the viewport, all three
-    // steps are already fully composed.
-    offset: ["start 100%", "start 75%"],
+    // Wider, earlier window — the step becomes fully readable while it's
+    // still in the bottom third of the viewport. Anything past that and we
+    // never want to see it half-composed when the user pauses mid-scroll.
+    offset: ["start 110%", "start 85%"],
   });
 
   const isOdd = index % 2 === 1;
-  const fromX = isOdd ? 140 : -140;
-  const fromRotate = isOdd ? 4 : -4;
+  const fromX = isOdd ? 60 : -60;
+  const fromRotate = isOdd ? 2 : -2;
 
   const x = useTransform(stepProgress, [0, 1], [fromX, 0]);
-  const opacity = useTransform(stepProgress, [0, 0.5, 1], [0, 0.6, 1]);
-  const scale = useTransform(stepProgress, [0, 1], [0.82, 1]);
+  // Opacity ramps up fast — by 30% progress the step is already solid,
+  // so it never sits at "half-faded" for more than a flicker.
+  const opacity = useTransform(stepProgress, [0, 0.3, 1], [0, 1, 1]);
+  const scale = useTransform(stepProgress, [0, 1], [0.92, 1]);
   const rotate = useTransform(stepProgress, [0, 1], [fromRotate, 0]);
-  const filter = useTransform(
-    stepProgress,
-    [0, 0.5, 1],
-    ["blur(10px)", "blur(3px)", "blur(0px)"],
-  );
+  // No blur — it makes paused/mid-scroll states look like a rendering bug.
 
   return (
     <motion.div
@@ -231,12 +243,24 @@ function Step({
               opacity,
               scale,
               rotate,
-              filter,
             }
       }
     >
       <MouseTilt intensity={4} perspective={1200}>
-        <div className="grid grid-cols-[64px_1fr] items-start gap-4 sm:grid-cols-[80px_1fr] sm:gap-6">
+        <div className="group relative grid grid-cols-[64px_1fr] items-start gap-4 rounded-(--radius-lg) p-2 sm:grid-cols-[80px_1fr] sm:gap-6 sm:p-4">
+          {/* Frosted background card — appears on hover. Gives the step
+              a sense of "lifting" off the page when interacted with. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-(--radius-lg) bg-white/40 opacity-0 shadow-(--shadow-soft) backdrop-blur-sm transition-opacity duration-500 group-hover:opacity-100"
+            style={{ transform: "translateZ(-10px)" }}
+          />
+          {/* Soft accent gradient on the leading edge of the card */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-(--radius-lg) bg-gradient-to-b from-(--color-primary) via-(--color-rose) to-(--color-champagne) opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          />
+
           <StepBadge
             Icon={Icon}
             number={number}
@@ -246,10 +270,12 @@ function Step({
           />
 
           <div
-            className="pt-1 sm:pt-2"
+            className="relative pt-1 sm:pt-2"
             style={{ transform: "translateZ(30px)" }}
           >
-            <h3 className="mb-2 heading-display-md">{title}</h3>
+            <h3 className="mb-2 heading-display-md transition-transform duration-500 group-hover:translate-x-1">
+              {title}
+            </h3>
             <p className="max-w-xl text-pretty text-(--color-muted-foreground)">
               {desc}
             </p>
@@ -287,6 +313,13 @@ function StepBadge({
   const haloOpacity = useTransform(lit, [0, 1], [0, 0.8]);
   const ringOpacity = useTransform(lit, [0, 0.5, 1], [0, 0.7, 0]);
   const ringScale = useTransform(lit, [0, 1], [0.6, 1.6]);
+  // Icon does a small bounce + twist at the activation moment, peaking at
+  // lit=0.5 and settling at 1 with a slight residual tilt. Reads as the
+  // icon "snapping awake" the instant the step lights up.
+  const iconScale = useTransform(lit, [0, 0.5, 1], [1, 1.3, 1.05]);
+  const iconRotate = useTransform(lit, [0, 0.5, 1], [0, -12, 0]);
+  // Number bubble brightens its background — a saturation pop at activation.
+  const bubbleScale = useTransform(lit, [0, 0.6, 1], [1, 1.18, 1.1]);
 
   return (
     <motion.div
@@ -319,13 +352,140 @@ function StepBadge({
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{ border: "1px solid oklch(92% 0.015 70)" }}
       />
-      <Icon
-        className="relative h-6 w-6 text-(--color-primary) sm:h-7 sm:w-7"
-        strokeWidth={1.5}
-      />
-      <span className="absolute -right-1 -top-1 z-10 grid h-6 w-6 place-items-center rounded-full bg-(--color-primary) text-[11px] font-semibold text-(--color-primary-foreground) shadow-(--shadow-soft) sm:h-7 sm:w-7 sm:text-xs">
+      <motion.div
+        style={
+          reduce ? undefined : { scale: iconScale, rotate: iconRotate }
+        }
+        className="relative"
+      >
+        <Icon
+          className="h-6 w-6 text-(--color-primary) sm:h-7 sm:w-7"
+          strokeWidth={1.5}
+        />
+      </motion.div>
+      <motion.span
+        style={{ scale: reduce ? 1 : bubbleScale }}
+        className="absolute -right-1 -top-1 z-10 grid h-6 w-6 place-items-center rounded-full bg-(--color-primary) text-[11px] font-semibold text-(--color-primary-foreground) shadow-(--shadow-soft) sm:h-7 sm:w-7 sm:text-xs"
+      >
         {number}
-      </span>
+      </motion.span>
     </motion.div>
+  );
+}
+
+/**
+ * TitleReveal — word-by-word entrance for the section title. Each word
+ * lifts in from below with blur and ease-out, staggered by 0.08s so the
+ * line reads left-to-right like it's being written, not snapping in
+ * whole.
+ */
+function TitleReveal({ text }: { text: string }) {
+  const wordVariants: Variants = {
+    hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: {
+        duration: 0.85,
+        delay: i * 0.08,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    }),
+  };
+
+  return (
+    <h2 className="heading-display-lg text-balance">
+      {text.split(" ").map((w, i) => (
+        <motion.span
+          key={i}
+          custom={i}
+          variants={wordVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.4 }}
+          className="mr-[0.25em] inline-block"
+        >
+          {w}
+        </motion.span>
+      ))}
+    </h2>
+  );
+}
+
+/**
+ * CometTrail — three smaller dots tracking behind the main comet on the
+ * timeline. Each is positioned by subtracting a small fixed pixel offset
+ * from the comet's top, so as the comet descends they trail upward —
+ * lagging behind without ever taking on a separate motion-value
+ * subscription. Opacity drops with distance for the fade-out tail.
+ */
+function CometTrail({
+  cometTop,
+  opacity,
+}: {
+  cometTop: MotionValue<string>;
+  opacity: MotionValue<number>;
+}) {
+  const trails = [
+    { offset: 14, size: 3, alpha: 0.7 },
+    { offset: 28, size: 2, alpha: 0.45 },
+    { offset: 44, size: 2, alpha: 0.25 },
+  ];
+
+  return (
+    <>
+      {trails.map((t, i) => {
+        // Wrap cometTop in a transform that subtracts the offset. We use
+        // a string template inside useTransform via a per-trail computed
+        // motion value at the call site below.
+        return (
+          <TrailDot
+            key={i}
+            cometTop={cometTop}
+            opacity={opacity}
+            offsetPx={t.offset}
+            sizePx={t.size}
+            alpha={t.alpha}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function TrailDot({
+  cometTop,
+  opacity,
+  offsetPx,
+  sizePx,
+  alpha,
+}: {
+  cometTop: MotionValue<string>;
+  opacity: MotionValue<number>;
+  offsetPx: number;
+  sizePx: number;
+  alpha: number;
+}) {
+  // Subtract offsetPx from cometTop's percentage value. cometTop is "X%"
+  // so we transform to "calc(X% - Npx)" which yields the trailing
+  // position. Native CSS calc handles the unit math at paint time.
+  const top = useTransform(cometTop, (v) => `calc(${v} - ${offsetPx}px)`);
+  return (
+    <motion.span
+      aria-hidden
+      style={{
+        top,
+        opacity,
+        width: sizePx * 2,
+        height: sizePx * 2,
+      }}
+      className="absolute left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-(--color-primary)"
+    >
+      <span
+        className="absolute inset-0 rounded-full bg-(--color-rose) blur-sm"
+        style={{ opacity: alpha }}
+      />
+    </motion.span>
   );
 }

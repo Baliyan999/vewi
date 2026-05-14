@@ -24,9 +24,9 @@ import { FloatingOrnaments } from "./parallax";
  *     to avoid italic Cyrillic descender clipping.
  *   • Animation is opacity + small Y slide, shared by text and visual so
  *     they enter/leave as a single visual unit.
- *   • Pin window is 210vh (section 280vh − sticky child 70vh), so each of
- *     the three phrases gets ~750px of scroll → a single hard swipe can't
- *     cycle through all of them.
+ *   • Pin window is 220vh (section 320vh − sticky child 100vh), so each
+ *     of the three phrases gets ~790px of scroll → a single hard swipe
+ *     can't cycle through all of them.
  */
 
 type Visual = "single" | "fan" | "grid";
@@ -43,30 +43,38 @@ export function StickyHeadline() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start start", "start -210%"],
+    // Sticky child is now h-screen (100vh), section is 320vh → pin
+    // window = 220vh (~2380px on a 1080 viewport, ~790px per phrase).
+    // Match this with the useScroll offset so progress 0→1 maps onto
+    // exactly the pin duration and phrase 3 finishes its fade right as
+    // the pin releases.
+    offset: ["start start", "start -220%"],
   });
 
   return (
-    <section ref={ref} className="relative" style={{ height: "280vh" }}>
-      <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-x-clip">
+    <section ref={ref} className="relative" style={{ height: "320vh" }}>
+      {/* Sticky child fills the FULL viewport (h-screen). Earlier
+          h-[70vh] was too cramped on laptop displays — the big
+          heading-display-xl + a tall photo card together overflowed
+          the centered area, pushing text up behind the sticky header.
+          Now content centers in the full viewport minus header space. */}
+      <div className="sticky top-0 h-screen overflow-x-clip">
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
-        <div className="container-page relative w-full">
+        <div className="container-page relative h-full">
           {/* All three phrases share one stage. Each is absolute inset-0
               inside this wrapper so they stack on top of each other —
               only one is opaque at a time per scroll progress. */}
-          <div className="relative mx-auto h-[60vh] max-w-5xl">
-            {PHRASES.map((p, i) => (
-              <PhraseLayer
-                key={i}
-                index={i}
-                total={PHRASES.length}
-                progress={scrollYProgress}
-                reduce={reduce ?? false}
-                phrase={p}
-              />
-            ))}
-          </div>
+          {PHRASES.map((p, i) => (
+            <PhraseLayer
+              key={i}
+              index={i}
+              total={PHRASES.length}
+              progress={scrollYProgress}
+              reduce={reduce ?? false}
+              phrase={p}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -118,9 +126,12 @@ function PhraseLayer({
         opacity: reduce ? (index === 1 ? 1 : 0) : opacity,
         y: reduce ? 0 : y,
       }}
-      className="absolute inset-0 flex flex-col items-center justify-center gap-10 md:gap-14"
+      // pt-20 reserves space for the sticky header (5rem ≈ 80px tall) so
+      // text never hides behind it; justify-center then centers the
+      // stack within the remaining viewport area below the header.
+      className="absolute inset-0 flex flex-col items-center justify-center gap-8 md:gap-12 pt-20"
     >
-      <h2 className="font-display text-5xl leading-tight md:text-7xl lg:text-8xl">
+      <h2 className="heading-display-xl px-4 text-center">
         <span className="text-(--color-foreground)">{phrase.before}</span>{" "}
         <span className="italic font-medium text-(--color-primary)">
           {phrase.accent}
@@ -193,22 +204,23 @@ function VisualSingle() {
 
 function VisualFan() {
   // Five overlapping cards spread across an arc. Center card sits forward;
-  // outer cards angle further from the spine.
+  // outer cards angle further from the spine. On small screens we tighten
+  // both the card sizes and the spread so nothing escapes the viewport.
   const cards = [
-    { hue: 15, rot: -18, x: -2.2, z: 1, size: "h-44 w-32 md:h-56 md:w-40" },
-    { hue: 40, rot: -9, x: -1.05, z: 2, size: "h-48 w-36 md:h-60 md:w-44" },
-    { hue: 60, rot: 0, x: 0, z: 3, size: "h-52 w-40 md:h-64 md:w-48", intensity: 0.1 },
-    { hue: 80, rot: 9, x: 1.05, z: 2, size: "h-48 w-36 md:h-60 md:w-44" },
-    { hue: 100, rot: 18, x: 2.2, z: 1, size: "h-44 w-32 md:h-56 md:w-40" },
+    { hue: 15, rot: -18, x: -2.2, z: 1, size: "h-32 w-24 sm:h-44 sm:w-32 md:h-56 md:w-40" },
+    { hue: 40, rot: -9, x: -1.05, z: 2, size: "h-36 w-28 sm:h-48 sm:w-36 md:h-60 md:w-44" },
+    { hue: 60, rot: 0, x: 0, z: 3, size: "h-40 w-32 sm:h-52 sm:w-40 md:h-64 md:w-48", intensity: 0.1 },
+    { hue: 80, rot: 9, x: 1.05, z: 2, size: "h-36 w-28 sm:h-48 sm:w-36 md:h-60 md:w-44" },
+    { hue: 100, rot: 18, x: 2.2, z: 1, size: "h-32 w-24 sm:h-44 sm:w-32 md:h-56 md:w-40" },
   ];
   return (
-    <div className="relative h-52 w-[420px] md:h-64 md:w-[560px]">
+    <div className="relative h-40 w-full max-w-[420px] sm:h-52 md:h-64 md:max-w-[560px]">
       {cards.map((c, i) => (
         <div
           key={i}
           className="absolute left-1/2 top-0"
           style={{
-            transform: `translateX(calc(-50% + ${c.x * 70}px))`,
+            transform: `translateX(calc(-50% + ${c.x * 42}px))`,
             zIndex: c.z,
           }}
         >
@@ -232,7 +244,7 @@ function VisualGrid() {
     rotate: ((i % 4) - 1.5) * 2.5,
   }));
   return (
-    <div className="grid w-[380px] grid-cols-6 gap-2 md:w-[560px] md:gap-3">
+    <div className="grid w-full max-w-[300px] grid-cols-6 gap-1.5 sm:max-w-[380px] sm:gap-2 md:max-w-[560px] md:gap-3">
       {cards.map((c, i) => (
         <PhotoCard
           key={i}

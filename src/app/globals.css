@@ -3,7 +3,7 @@
 
 @theme {
   /* Warm ivory base, dusty rose-gold accents */
-  --color-background: oklch(98.5% 0.012 80);
+  --color-background: oklch(96% 0.028 65);
   --color-foreground: oklch(22% 0.03 50);
   --color-muted: oklch(95.5% 0.015 75);
   --color-muted-foreground: oklch(45% 0.025 50);
@@ -42,14 +42,11 @@
   }
 
   body {
-    /* Completely flat warm-ivory base — even a 2-stop linear-gradient
-     * with different hues showed a visible vertical band on wide
-     * viewports. Now we use a single solid background-color and only
-     * a soft top-right radial accent. No gradient = no seam, ever. */
-    background-color: oklch(96% 0.028 65);
-    background-image:
-      radial-gradient(circle 1100px at 100% 0%, oklch(91% 0.05 75 / 0.28), transparent 70%);
-    background-attachment: fixed;
+    /* Absolutely flat warm-ivory using the same theme variable that
+     * Hero's bottom fade and the rest of the app reference, so there
+     * can never be a color mismatch between body and any section that
+     * fades to "background". */
+    background-color: var(--color-background);
   }
 
   /* Subtle paper grain — tactile richness without distraction */

@@ -224,7 +224,12 @@ export function Hero() {
         </MouseTilt>
       </motion.div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-(--color-background)" />
+      {/* Long, soft fade so Hero's rose/champagne overlays melt into
+       * the body color without a visible boundary. The fade now
+       * references --color-background, which has been unified with the
+       * actual body background-color in globals.css, so they match
+       * exactly — no more "lighter strip" seam at Hero's bottom. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-(--color-background)" />
     </section>
   );
 }

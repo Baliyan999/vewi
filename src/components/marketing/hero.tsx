@@ -9,7 +9,7 @@ import {
   useReducedMotion,
   type Variants,
 } from "motion/react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Rings, Sparkle } from "./ornaments";
 import {
   PointerParallaxScene,
@@ -53,7 +53,10 @@ export function Hero() {
   const titleWords = t("title").split(" ");
 
   return (
-    <section ref={ref} className="relative isolate overflow-hidden pt-10 md:pt-16">
+    <section
+      ref={ref}
+      className="relative isolate overflow-hidden pt-[calc(env(safe-area-inset-top,0)+5.5rem)] md:pt-24"
+    >
       <motion.div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-30"
@@ -108,20 +111,10 @@ export function Hero() {
           scale: reduce ? 1 : titleScale,
           opacity: reduce ? 1 : titleOpacity,
         }}
-        className="container-page relative pt-20 pb-12 md:pt-32 md:pb-16"
+        className="container-page relative pb-16 pt-10 md:pb-24 md:pt-20"
       >
         <MouseTilt intensity={4} className="mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mx-auto mb-7 inline-flex items-center gap-2 rounded-full border border-(--color-border) bg-white/70 px-4 py-1.5 text-xs uppercase tracking-[0.22em] text-(--color-primary) backdrop-blur"
-          >
-            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
-            {t("eyebrow")}
-          </motion.div>
-
-          <h1 className="text-balance text-5xl leading-[1.02] md:text-[5.5rem]">
+          <h1 className="heading-display-xl text-balance">
             {titleWords.map((w, i) => (
               <motion.span
                 key={i}
@@ -132,7 +125,15 @@ export function Hero() {
                 className="mr-[0.25em] inline-block"
               >
                 {i === Math.floor(titleWords.length / 2) ? (
-                  <span className="text-gradient-gold italic">{w}</span>
+                  // Solid --color-primary, NOT .text-gradient-gold. The
+                  // gradient relies on background-clip:text which clips
+                  // to the inline line-box — Hero's tight leading-[1.02]
+                  // is too short for italic Cyrillic glyphs whose tops
+                  // ("о", "с") sit a hair above the cap height, so they
+                  // render with clipped tops. Solid color paints the
+                  // entire glyph natively, no clip-box involved. Same
+                  // fix used in StickyHeadline.
+                  <span className="italic font-medium text-(--color-primary)">{w}</span>
                 ) : (
                   w
                 )}
@@ -157,7 +158,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.05 }}
-            className="mx-auto mt-7 max-w-2xl text-lg text-(--color-muted-foreground) md:text-xl"
+            className="mx-auto mt-7 max-w-2xl text-pretty text-base leading-relaxed text-(--color-muted-foreground) sm:text-lg md:text-xl"
           >
             {t("subtitle")}
           </motion.p>
@@ -166,16 +167,16 @@ export function Hero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
+            className="mt-10 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4"
           >
             <a
               href="#lead"
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "group relative overflow-hidden px-7 shadow-(--shadow-soft)",
+                "group relative w-full overflow-hidden px-7 shadow-(--shadow-soft) sm:w-auto",
               )}
             >
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-2">
                 {t("ctaPrimary")}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
@@ -185,7 +186,7 @@ export function Hero() {
               href="#how"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "border-(--color-border) bg-white/70 backdrop-blur",
+                "w-full justify-center border-(--color-border) bg-white/70 backdrop-blur sm:w-auto",
               )}
             >
               {t("ctaSecondary")}
@@ -199,7 +200,7 @@ export function Hero() {
               hidden: {},
               visible: { transition: { delayChildren: 1.5, staggerChildren: 0.12 } },
             }}
-            className="mx-auto mt-14 grid max-w-3xl gap-x-6 gap-y-3 text-left text-sm text-(--color-muted-foreground) md:grid-cols-2"
+            className="mx-auto mt-12 grid max-w-3xl gap-x-6 gap-y-3 text-left text-sm text-(--color-muted-foreground) sm:grid-cols-2 md:mt-16"
           >
             {[1, 2, 3, 4].map((i) => (
               <motion.li

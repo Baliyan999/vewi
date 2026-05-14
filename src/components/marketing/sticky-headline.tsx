@@ -10,10 +10,32 @@ import {
 } from "motion/react";
 import { FloatingOrnaments } from "./parallax";
 
-const PHRASES = [
-  "Каждый кадр",
-  "от каждого гостя",
-  "в одном альбоме",
+/**
+ * StickyHeadline — three short phrases that crossfade as the user scrolls
+ * past a pinned section. Rebuild notes:
+ *
+ *   • The accent word is rendered with a SOLID color, not a CSS gradient
+ *     clipped to text. background-clip:text + italic Cyrillic descenders
+ *     ("р", "д") was an endless yak-shave: even at line-height 3 the
+ *     gradient paint area didn't always cover the deepest glyph tips on
+ *     some Chrome builds. A solid color paints the entire glyph natively
+ *     with no clip-box involved, so the problem disappears entirely.
+ *
+ *   • Phrase animation is now pure opacity + small Y slide. No blur, no
+ *     scale — those were piling complexity without payoff and the blur in
+ *     particular added a fraction of perceived blurriness even at rest.
+ *
+ *   • Sticky pin window math kept: section is 130vh tall, sticky child is
+ *     70vh, so progress 0→1 maps exactly onto the 60vh of scroll during
+ *     which the pin holds. No trailing empty pinned area, no overshoot.
+ */
+
+type Phrase = { before: string; accent: string; after?: string };
+
+const PHRASES: readonly Phrase[] = [
+  { before: "Каждый", accent: "кадр" },
+  { before: "от", accent: "каждого", after: "гостя" },
+  { before: "в", accent: "одном", after: "альбоме" },
 ] as const;
 
 export function StickyHeadline() {
@@ -21,39 +43,24 @@ export function StickyHeadline() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
-    // sticky pin lives from section.top hitting viewport.top (start start)
-    // until section.top is `(section_height − child_height) = 60vh` above
-    // viewport.top. Map useScroll progress 0→1 onto that pin window exactly
-    // so the three phrases finish their cross-fade right as the pin
-    // releases — no trailing empty pinned area.
     offset: ["start start", "start -60%"],
   });
 
   return (
     <section ref={ref} className="relative" style={{ height: "130vh" }}>
       <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-x-clip">
-        {/* Decorative blur orbs removed — they were bounded by the 70vh
-         * sticky child and created a visible horizontal seam where their
-         * coverage ended. The body's continuous linear wash now provides
-         * all the ambient warmth.
-         *
-         * overflow-x-clip (NOT overflow-hidden) — vertical clipping was
-         * cutting italic Cyrillic descenders ("р", "д") whose gradient
-         * fill extends a fraction below the line box. Horizontal clip
-         * still prevents page-wide overflow from FloatingOrnaments. */}
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
         <div className="container-page relative text-center">
           {PHRASES.map((phrase, i) => (
-            <Phrase
+            <PhraseLine
               key={i}
               index={i}
               total={PHRASES.length}
               progress={scrollYProgress}
               reduce={reduce ?? false}
-            >
-              {phrase}
-            </Phrase>
+              phrase={phrase}
+            />
           ))}
         </div>
       </div>
@@ -61,39 +68,30 @@ export function StickyHeadline() {
   );
 }
 
-function Phrase({
+function PhraseLine({
   index,
   total,
   progress,
   reduce,
-  children,
+  phrase,
 }: {
   index: number;
   total: number;
   progress: ReturnType<typeof useScroll>["scrollYProgress"];
   reduce: boolean;
-  children: string;
+  phrase: Phrase;
 }) {
   const span = 1 / total;
   const start = index * span;
   const end = start + span;
   const isFirst = index === 0;
 
-  // Each phrase glides into place over ~20% of its span via an ease-in-out
-  // curve, holds at center for ~60%, then glides out in the final ~20%.
-  // The longer fades + S-curve easing make the transition feel buttery
-  // instead of stepped.
+  // 20% enter / 60% hold / 20% exit, with ease-in-out S-curve.
   const ENTER = span * 0.2;
   const EXIT = span * 0.2;
   const inputs = isFirst
     ? [end - EXIT, end]
     : [start, start + ENTER, end - EXIT, end];
-
-  // Apply ease-in-out across every segment of the transform so each fade
-  // follows an S-curve — slow start, fast middle, slow end — instead of
-  // a linear sweep. A single function is interpreted as "use this for all
-  // segments" by motion, and the flat hold zone in the middle remains flat
-  // because both ends of that segment have the same output value.
   const easeOpts = { ease: easeInOut };
 
   const opacity = useTransform<number, number>(
@@ -102,71 +100,31 @@ function Phrase({
     isFirst ? [1, 0] : [0, 1, 1, 0],
     easeOpts,
   );
-  const scale = useTransform<number, number>(
-    progress,
-    inputs,
-    isFirst ? [1, 1.06] : [0.92, 1, 1, 1.06],
-    easeOpts,
-  );
-  const blur = useTransform(
-    progress,
-    inputs,
-    isFirst ? ["0px", "8px"] : ["8px", "0px", "0px", "8px"],
-    easeOpts,
-  );
   const y = useTransform<number, number>(
     progress,
     inputs,
-    isFirst ? [0, -30] : [30, 0, 0, -30],
+    isFirst ? [0, -24] : [24, 0, 0, -24],
     easeOpts,
   );
-
-  const words = children.split(" ");
 
   return (
     <motion.h2
       style={{
         opacity: reduce ? (index === 1 ? 1 : 0) : opacity,
-        scale: reduce ? 1 : scale,
-        filter: reduce ? undefined : (blur as unknown as string),
         y: reduce ? 0 : y,
       }}
-      className="absolute inset-x-0 mx-auto font-display text-5xl leading-[1.2] py-2 md:text-7xl lg:text-8xl"
+      className="absolute inset-x-0 mx-auto font-display text-5xl leading-tight md:text-7xl lg:text-8xl"
     >
-      {words.map((w, i) => (
-        <span key={i} className="mr-[0.3em] inline-block">
-          {i === Math.floor(words.length / 2) ? (
-            // background-clip:text paints the gradient inside the padding-box.
-            // Italic Cyrillic descenders ("р", "д", "ц") poke below it, so
-            // those bits render transparent and look "cut". inline-block +
-            // py-[0.18em] grows the box just enough to cover the full glyph.
-            <span
-              className="text-gradient-gold italic inline-block leading-[3]"
-              style={{
-                // We learned the hard way: padding does NOT extend the
-                // background-clip:text paint area. The gradient is
-                // clipped to the inline LINE-BOX (line-height × font-
-                // size), not to the padding-box. Italic Cyrillic
-                // descenders ("р", "д") extend below the line-box for
-                // line-height < ~2.5, so their bottom tips render
-                // transparent — what looks like the glyph being "cut
-                // flat" at a horizontal line. Fix: a tall line-height
-                // (3) gives the line-box enough room to contain the
-                // full descender, so background-clip:text paints the
-                // whole glyph. No padding hack needed.
-                //
-                // inline-block + vertical-align: baseline means the
-                // taller line-box doesn't push neighbouring words
-                // around — they still share the same text baseline.
-              }}
-            >
-              {w}
-            </span>
-          ) : (
-            w
-          )}
-        </span>
-      ))}
+      <span className="text-(--color-foreground)">{phrase.before}</span>{" "}
+      <span className="italic font-medium text-(--color-primary)">
+        {phrase.accent}
+      </span>
+      {phrase.after ? (
+        <>
+          {" "}
+          <span className="text-(--color-foreground)">{phrase.after}</span>
+        </>
+      ) : null}
     </motion.h2>
   );
 }

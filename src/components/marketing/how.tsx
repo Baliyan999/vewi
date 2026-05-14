@@ -198,7 +198,12 @@ function Step({
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress: stepProgress } = useScroll({
     target: ref,
-    offset: ["start 95%", "start 35%"],
+    // Tight reveal window — animation runs only while the step's top is
+    // travelling through the bottom quarter of the viewport. By the time
+    // the step is past mid-screen the animation is long done, so when
+    // the section title reaches the top of the viewport, all three
+    // steps are already fully composed.
+    offset: ["start 100%", "start 75%"],
   });
 
   const isOdd = index % 2 === 1;

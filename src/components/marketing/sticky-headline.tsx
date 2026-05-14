@@ -43,11 +43,15 @@ export function StickyHeadline() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start start", "start -60%"],
+    // Section is 280vh and the sticky child is 70vh, so the pin window
+    // is 210vh — that's the scroll distance over which all three
+    // phrases cross-fade. ~2270px on a 1080 viewport, ~750px per phrase,
+    // so a single hard trackpad swipe can't blow past all of them.
+    offset: ["start start", "start -210%"],
   });
 
   return (
-    <section ref={ref} className="relative" style={{ height: "130vh" }}>
+    <section ref={ref} className="relative" style={{ height: "280vh" }}>
       <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-x-clip">
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
@@ -86,9 +90,12 @@ function PhraseLine({
   const end = start + span;
   const isFirst = index === 0;
 
-  // 20% enter / 60% hold / 20% exit, with ease-in-out S-curve.
-  const ENTER = span * 0.2;
-  const EXIT = span * 0.2;
+  // 30% enter / 40% hold / 30% exit. Longer fades than before so the
+  // transition between phrases reads as a deliberate slow crossfade
+  // rather than a quick swap, especially over the now-wider 210vh
+  // pin window where each phrase spans ~750px of scroll.
+  const ENTER = span * 0.3;
+  const EXIT = span * 0.3;
   const inputs = isFirst
     ? [end - EXIT, end]
     : [start, start + ENTER, end - EXIT, end];

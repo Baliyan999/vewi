@@ -98,25 +98,45 @@ function PhraseLayer({
   const start = index * span;
   const end = start + span;
   const isFirst = index === 0;
+  const isLast = index === total - 1;
 
   // 30% enter / 40% hold / 30% exit, ease-in-out for a slow crossfade.
+  // First phrase has NO enter animation (visible from the top of the
+  // section before user starts scrolling); last phrase has NO exit
+  // animation (stays visible after user has reached the end). Middle
+  // phrases get both. This means the first frame the user sees is
+  // phrase 1 fully composed, and the last frame is phrase 3 fully
+  // composed — no empty pinned area on either side of the sequence.
   const ENTER = span * 0.3;
   const EXIT = span * 0.3;
   const inputs = isFirst
     ? [end - EXIT, end]
-    : [start, start + ENTER, end - EXIT, end];
+    : isLast
+      ? [start, start + ENTER]
+      : [start, start + ENTER, end - EXIT, end];
   const easeOpts = { ease: easeInOut };
+
+  const opacityValues = isFirst
+    ? [1, 0]
+    : isLast
+      ? [0, 1]
+      : [0, 1, 1, 0];
+  const yValues = isFirst
+    ? [0, -24]
+    : isLast
+      ? [24, 0]
+      : [24, 0, 0, -24];
 
   const opacity = useTransform<number, number>(
     progress,
     inputs,
-    isFirst ? [1, 0] : [0, 1, 1, 0],
+    opacityValues,
     easeOpts,
   );
   const y = useTransform<number, number>(
     progress,
     inputs,
-    isFirst ? [0, -24] : [24, 0, 0, -24],
+    yValues,
     easeOpts,
   );
 

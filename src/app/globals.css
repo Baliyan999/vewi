@@ -42,13 +42,20 @@
   }
 
   body {
-    /* Three soft radial washes spanning the viewport so the warm ivory
-     * tint covers the whole screen instead of fading out around 50%
-     * height and creating a visible horizontal band. */
+    /* Continuous warm-ivory linear wash from top to bottom — no
+     * radial-gradient gaps, no banding regardless of scroll position.
+     * A single subtle champagne accent at top-right keeps it from
+     * looking flat. */
     background-image:
-      radial-gradient(ellipse 1800px 1400px at 0% 0%,    oklch(90% 0.05 25 / 0.32), transparent 75%),
-      radial-gradient(ellipse 1600px 1400px at 100% 20%, oklch(90% 0.05 80 / 0.30), transparent 75%),
-      radial-gradient(ellipse 1800px 1200px at 50% 110%, oklch(92% 0.045 55 / 0.28), transparent 75%);
+      radial-gradient(circle 1100px at 100% 0%, oklch(90% 0.05 75 / 0.30), transparent 70%),
+      linear-gradient(
+        180deg,
+        oklch(94% 0.045 30) 0%,
+        oklch(96% 0.030 55) 30%,
+        oklch(97% 0.022 70) 50%,
+        oklch(96% 0.028 75) 70%,
+        oklch(94% 0.040 85) 100%
+      );
     background-attachment: fixed;
   }
 

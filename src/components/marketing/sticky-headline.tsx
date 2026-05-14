@@ -29,21 +29,13 @@ export function StickyHeadline() {
     offset: ["start start", "start -60%"],
   });
 
-  const orbY = useTransform(scrollYProgress, [0, 1], ["-10%", "20%"]);
-
   return (
     <section ref={ref} className="relative" style={{ height: "130vh" }}>
       <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-hidden">
-        <motion.div
-          aria-hidden
-          style={{ y: reduce ? 0 : orbY }}
-          className="pointer-events-none absolute inset-0"
-        >
-          <div className="absolute -left-32 top-1/3 h-[440px] w-[440px] rounded-full bg-(--color-rose)/30 blur-3xl" />
-          <div className="absolute -right-24 top-1/4 h-[420px] w-[420px] rounded-full bg-(--color-champagne)/40 blur-3xl" />
-          <div className="absolute left-1/2 bottom-0 h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-(--color-accent)/30 blur-3xl" />
-        </motion.div>
-
+        {/* Decorative blur orbs removed — they were bounded by the 70vh
+         * sticky child and created a visible horizontal seam where their
+         * coverage ended. The body's continuous linear wash now provides
+         * all the ambient warmth. */}
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
         <div className="container-page relative text-center">

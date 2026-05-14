@@ -31,11 +31,16 @@ export function StickyHeadline() {
 
   return (
     <section ref={ref} className="relative" style={{ height: "130vh" }}>
-      <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex h-[70vh] items-center justify-center overflow-x-clip">
         {/* Decorative blur orbs removed — they were bounded by the 70vh
          * sticky child and created a visible horizontal seam where their
          * coverage ended. The body's continuous linear wash now provides
-         * all the ambient warmth. */}
+         * all the ambient warmth.
+         *
+         * overflow-x-clip (NOT overflow-hidden) — vertical clipping was
+         * cutting italic Cyrillic descenders ("р", "д") whose gradient
+         * fill extends a fraction below the line box. Horizontal clip
+         * still prevents page-wide overflow from FloatingOrnaments. */}
         <FloatingOrnaments count={20} hueBase={25} hueSpread={70} />
 
         <div className="container-page relative text-center">
@@ -136,10 +141,10 @@ function Phrase({
             // those bits render transparent and look "cut". inline-block +
             // py-[0.18em] grows the box just enough to cover the full glyph.
             <span
-              className="text-gradient-gold italic inline-block leading-[1.4]"
+              className="text-gradient-gold italic inline-block leading-[1.5]"
               style={{
-                paddingBlock: "0.35em",
-                marginBlock: "-0.35em",
+                paddingBlock: "0.5em",
+                marginBlock: "-0.5em",
               }}
             >
               {w}

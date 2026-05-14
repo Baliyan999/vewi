@@ -141,10 +141,10 @@ function Phrase({
             // those bits render transparent and look "cut". inline-block +
             // py-[0.18em] grows the box just enough to cover the full glyph.
             <span
-              className="text-gradient-gold italic inline-block leading-[1.5]"
+              className="text-gradient-gold italic inline-block leading-[1.7]"
               style={{
-                paddingBlock: "0.5em",
-                marginBlock: "-0.5em",
+                paddingBlock: "0.8em",
+                marginBlock: "-0.8em",
               }}
             >
               {w}

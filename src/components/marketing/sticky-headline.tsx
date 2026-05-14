@@ -143,7 +143,13 @@ function Phrase({
             // Italic Cyrillic descenders ("р", "д", "ц") poke below it, so
             // those bits render transparent and look "cut". inline-block +
             // py-[0.18em] grows the box just enough to cover the full glyph.
-            <span className="text-gradient-gold italic inline-block py-[0.18em] -my-[0.18em] leading-[1]">
+            <span
+              className="text-gradient-gold italic inline-block leading-[1.4]"
+              style={{
+                paddingBlock: "0.35em",
+                marginBlock: "-0.35em",
+              }}
+            >
               {w}
             </span>
           ) : (

@@ -95,6 +95,22 @@ export function Features() {
     return -panDistance * v;
   });
 
+  // Pre-compute each card's left-edge offset inside the track (in scaled
+  // pixels). Each card uses this + the live `x` motion value to figure
+  // out where its centre is on screen, which drives the coverflow-style
+  // focus scaling: the card closest to viewport centre grows + sharpens,
+  // edges shrink + dim.
+  const cardLefts = (() => {
+    const s = scaleRef.current;
+    const lefts: number[] = [];
+    let cursor = SIDE_PADDING;
+    for (const tile of TILES) {
+      lefts.push(cursor);
+      cursor += tile.w * s + GAP;
+    }
+    return lefts;
+  })();
+
   // Eyebrow + title parallax — these sit above the track inside the pin.
   const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
 
@@ -155,6 +171,9 @@ export function Features() {
                 key={i}
                 tile={tile}
                 scale={scaleRef.current || 1}
+                cardLeft={cardLefts[i]}
+                masterX={x}
+                vwRef={vwRef}
                 index={i}
                 Icon={ICONS[i]}
                 title={t(`f${i + 1}Title` as "f1Title")}
@@ -227,6 +246,9 @@ function TitleReveal({
 function BentoCard({
   tile,
   scale,
+  cardLeft,
+  masterX,
+  vwRef,
   index,
   Icon,
   title,
@@ -235,12 +257,48 @@ function BentoCard({
 }: {
   tile: (typeof TILES)[number];
   scale: number;
+  cardLeft: number;
+  masterX: MotionValue<number>;
+  vwRef: React.RefObject<number>;
   index: number;
   Icon: (typeof ICONS)[number];
   title: string;
   desc: string;
   reduce: boolean;
 }) {
+  // Coverflow-style focus amount — 1 when the card's centre is at the
+  // viewport's centre, 0 when it's a half-viewport-width or more away.
+  // Re-runs whenever the master pan motion value updates, so cards
+  // continuously rebalance as they slide across the screen.
+  const focus = useTransform(masterX, (xVal) => {
+    const vw = vwRef.current || 1;
+    const cardCenter = xVal + cardLeft + (tile.w * scale) / 2;
+    const distance = Math.abs(cardCenter - vw / 2);
+    const normalized = Math.min(distance / (vw / 2), 1);
+    return 1 - normalized; // 1 = on-axis, 0 = at the edge
+  });
+
+  // Focus drives a coverflow look: centre card sharper / larger /
+  // brighter / tilted flat; edge cards smaller, dimmer, with a slight
+  // Y-axis tilt and tiny blur (like passing pages in a magazine).
+  const coverflowScale = useTransform(focus, [0, 1], [0.86, 1]);
+  const coverflowOpacity = useTransform(focus, [0, 1], [0.55, 1]);
+  const coverflowBlur = useTransform(
+    focus,
+    [0, 0.6, 1],
+    ["3px", "1px", "0px"],
+  );
+  // Edge cards tilt: cards entering from the right rotate -Y, exiting
+  // to the left rotate +Y. The sign of (cardCenter - viewportCenter)
+  // tells us which side we're on.
+  const rotateY = useTransform(masterX, (xVal) => {
+    const vw = vwRef.current || 1;
+    const cardCenter = xVal + cardLeft + (tile.w * scale) / 2;
+    const offset = cardCenter - vw / 2; // negative = left of centre
+    const norm = Math.max(-1, Math.min(1, offset / (vw / 2)));
+    return -norm * 14; // -14° to +14° around centre
+  });
+
   return (
     <motion.div
       whileHover="hover"
@@ -250,6 +308,14 @@ function BentoCard({
         width: tile.w * scale,
         height: tile.h * scale,
         translateY: reduce ? 0 : tile.offsetY * scale,
+        scale: reduce ? 1 : coverflowScale,
+        opacity: reduce ? 1 : coverflowOpacity,
+        rotateY: reduce ? 0 : rotateY,
+        filter: reduce
+          ? undefined
+          : (useTransform(coverflowBlur, (b) => `blur(${b})`) as unknown as string),
+        transformPerspective: 1400,
+        transformStyle: "preserve-3d",
         flexShrink: 0,
       }}
       className="relative"
@@ -273,6 +339,24 @@ function BentoCard({
           style={{ background: `oklch(85% 0.1 ${tile.hue})` }}
         />
 
+        {/* Active-card pulse halo — visible only when focus is high,
+            radiates from the icon area. */}
+        {!reduce && (
+          <motion.span
+            aria-hidden
+            style={{
+              opacity: useTransform(focus, [0.7, 1], [0, 0.55]),
+            }}
+            animate={{ scale: [1, 1.25, 1] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            className="pointer-events-none absolute left-6 top-6 h-14 w-14 rounded-2xl sm:left-8 sm:top-8"
+            style={{
+              background: `radial-gradient(circle, oklch(80% 0.12 ${tile.hue} / 0.55), transparent 70%)`,
+              filter: "blur(8px)",
+            }}
+          />
+        )}
+
         {/* Icon + ordinal — top row, simple and quiet */}
         <div className="relative flex items-start justify-between">
           <motion.div
@@ -291,12 +375,16 @@ function BentoCard({
           >
             <Icon className="h-7 w-7" strokeWidth={1.5} />
           </motion.div>
-          <span
-            className="font-display text-3xl text-(--color-muted-foreground)/30"
+          <motion.span
+            // Ordinal brightens when card is in focus
+            style={{
+              opacity: reduce ? 0.3 : useTransform(focus, [0, 1], [0.15, 0.5]),
+            }}
+            className="font-display text-3xl text-(--color-muted-foreground)"
             aria-hidden
           >
             {String(index + 1).padStart(2, "0")}
-          </span>
+          </motion.span>
         </div>
 
         {/* Spacer pushes title+desc to the bottom */}

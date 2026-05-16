@@ -20,21 +20,39 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden py-24 md:py-32"
+      // Section padding uses viewport-height-aware clamp so that on
+      // shorter 16:10 displays (≈900px tall, like MacBook 1440×900)
+      // the chrome shrinks down and the three pricing cards fit
+      // inside one screen with the title still visible above them.
+      // On 16:9 displays (≥1080) the padding climbs back up to its
+      // generous spacious feel.
+      className="relative overflow-hidden"
+      style={{
+        paddingTop: "clamp(2.5rem, 7vh, 8rem)",
+        paddingBottom: "clamp(2.5rem, 7vh, 8rem)",
+      }}
     >
       <DriftingOrbs variant="champagne" />
       <FloatingOrnaments count={14} hueBase={45} />
 
       <div className="container-page relative">
-        <Reveal className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-(--color-primary)">
+        <Reveal
+          className="mx-auto max-w-2xl text-center"
+          // Title block margin shrinks with viewport height too.
+        >
+          <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-(--color-primary) sm:text-xs">
             ⋄ ⋄ ⋄
           </p>
-          <h2 className="mb-4 text-4xl md:text-5xl">{t("title")}</h2>
-          <p className="text-(--color-muted-foreground)">{t("subtitle")}</p>
+          <h2 className="heading-display-lg mb-3">{t("title")}</h2>
+          <p className="text-pretty text-base text-(--color-muted-foreground) sm:text-lg">
+            {t("subtitle")}
+          </p>
         </Reveal>
 
-        <Stagger className="grid items-start gap-6 md:grid-cols-3" step={0.12}>
+        <Stagger
+          className="mt-8 grid items-start gap-5 sm:gap-6 md:mt-12 lg:grid-cols-3"
+          step={0.12}
+        >
           {TIERS.map((tier) => {
             const isHighlight = "highlighted" in tier && tier.highlighted;
             return (
@@ -44,7 +62,7 @@ export function Pricing() {
                     whileHover={isHighlight ? { y: -6 } : { y: -3 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
                     className={cn(
-                      "relative flex h-full flex-col rounded-(--radius-xl) p-8",
+                      "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7",
                       isHighlight
                         ? "border border-(--color-primary)/40 shadow-(--shadow-glow)"
                         : "border border-(--color-border) bg-white/70 shadow-(--shadow-soft) backdrop-blur",
@@ -74,13 +92,13 @@ export function Pricing() {
                       </>
                     )}
 
-                    <h3 className="font-display text-3xl">
+                    <h3 className="font-display text-xl sm:text-2xl md:text-3xl">
                       {t(`${tier.key}.name` as "basic.name")}
                     </h3>
-                    <div className="mt-5 flex items-baseline gap-2">
+                    <div className="mt-3 flex items-baseline gap-2 md:mt-4">
                       <span
                         className={cn(
-                          "text-4xl font-display tracking-tight",
+                          "font-display text-2xl tracking-tight sm:text-3xl md:text-4xl",
                           isHighlight ? "text-gradient-gold" : "",
                         )}
                       >
@@ -94,9 +112,9 @@ export function Pricing() {
                       {t("perEvent")}
                     </p>
 
-                    <div className="my-6 h-px bg-(--color-border)" />
+                    <div className="my-4 h-px bg-(--color-border) md:my-6" />
 
-                    <ul className="flex flex-1 flex-col gap-3.5 text-sm">
+                    <ul className="flex flex-1 flex-col gap-2.5 text-sm md:gap-3.5">
                       {Array.from({ length: tier.featureCount }, (_, j) => j + 1).map(
                         (k) => (
                           <li key={k} className="flex items-start gap-3">
@@ -112,7 +130,7 @@ export function Pricing() {
                     <a
                       href="#lead"
                       className={cn(
-                        "mt-8",
+                        "mt-5 md:mt-7",
                         buttonVariants({
                           variant: isHighlight ? "default" : "outline",
                           size: "lg",

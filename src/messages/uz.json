@@ -74,13 +74,24 @@
     },
     "premium": {
       "name": "Premium",
-      "price": "1 690 000",
-      "f1": "Mehmonlar soni cheksiz",
-      "f2": "Suratlar soni cheksiz",
+      "price": "1 990 000",
+      "f1": "500 mehmongacha",
+      "f2": "Har birida 50 surat + 15 video",
       "f3": "6 oy saqlash",
       "f4": "AI eng yaxshi kadrlar tanlovi",
       "f5": "Maxsus domen",
       "f6": "Google Drive'ga eksport"
+    },
+    "luxury": {
+      "name": "Luxury",
+      "price": "2 990 000",
+      "f1": "Premiumdagi hammasi",
+      "f2": "To'y kuni shaxsiy konsyerj",
+      "f3": "AI tanlagan top-100 kadr (izohli)",
+      "f4": "Brendlangan USB-flesh pochta orqali",
+      "f5": "Bosma foto-albom 50 sahifa",
+      "f6": "12 oy saqlash",
+      "f7": "Ustuvor qo'llab-quvvatlash"
     }
   },
   "lead": {

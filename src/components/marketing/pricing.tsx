@@ -12,6 +12,7 @@ const TIERS = [
   { key: "basic", featureCount: 5, drift: 0.04 },
   { key: "pro", featureCount: 6, highlighted: true, drift: -0.05 },
   { key: "premium", featureCount: 6, drift: 0.04 },
+  { key: "luxury", featureCount: 7, drift: -0.04, luxe: true },
 ] as const;
 
 export function Pricing() {
@@ -50,22 +51,27 @@ export function Pricing() {
         </Reveal>
 
         <Stagger
-          className="mt-8 grid items-start gap-5 sm:gap-6 md:mt-12 lg:grid-cols-3"
-          step={0.12}
+          className="mt-8 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-12 md:gap-6 lg:grid-cols-4"
+          step={0.1}
         >
           {TIERS.map((tier) => {
             const isHighlight = "highlighted" in tier && tier.highlighted;
+            const isLuxe = "luxe" in tier && tier.luxe;
             return (
               <StaggerItem key={tier.key}>
                 <ParallaxY strength={tier.drift}>
                   <motion.div
-                    whileHover={isHighlight ? { y: -6 } : { y: -3 }}
+                    whileHover={isHighlight || isLuxe ? { y: -6 } : { y: -3 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
                     className={cn(
                       "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7",
-                      isHighlight
-                        ? "border border-(--color-primary)/40 shadow-(--shadow-glow)"
-                        : "border border-(--color-border) bg-white/70 shadow-(--shadow-soft) backdrop-blur",
+                      isHighlight &&
+                        "border border-(--color-primary)/40 shadow-(--shadow-glow)",
+                      isLuxe &&
+                        "border border-(--color-foreground)/30 shadow-[0_24px_60px_-20px_rgb(60_30_15_/_0.35)]",
+                      !isHighlight &&
+                        !isLuxe &&
+                        "border border-(--color-border) bg-white/70 shadow-(--shadow-soft) backdrop-blur",
                     )}
                     style={
                       isHighlight
@@ -73,7 +79,13 @@ export function Pricing() {
                             background:
                               "linear-gradient(180deg, oklch(98% 0.02 70) 0%, oklch(94% 0.04 60) 100%)",
                           }
-                        : undefined
+                        : isLuxe
+                          ? {
+                              background:
+                                "linear-gradient(180deg, oklch(24% 0.04 50) 0%, oklch(18% 0.05 40) 100%)",
+                              color: "oklch(95% 0.02 70)",
+                            }
+                          : undefined
                     }
                   >
                     {isHighlight && (
@@ -91,6 +103,26 @@ export function Pricing() {
                         </div>
                       </>
                     )}
+                    {isLuxe && (
+                      <>
+                        <span
+                          aria-hidden
+                          className="absolute -inset-px -z-10 rounded-(--radius-xl) opacity-60 blur-lg"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, oklch(55% 0.1 35), oklch(70% 0.08 60), oklch(50% 0.09 30))",
+                          }}
+                        />
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-3.5 py-1.5 text-[10px] uppercase tracking-[0.2em] shadow-(--shadow-soft)"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, oklch(70% 0.12 50), oklch(85% 0.08 75))",
+                            color: "oklch(20% 0.04 35)",
+                          }}>
+                          ★ Эксклюзив
+                        </div>
+                      </>
+                    )}
 
                     <h3 className="font-display text-xl sm:text-2xl md:text-3xl">
                       {t(`${tier.key}.name` as "basic.name")}
@@ -99,26 +131,63 @@ export function Pricing() {
                       <span
                         className={cn(
                           "font-display text-2xl tracking-tight sm:text-3xl md:text-4xl",
-                          isHighlight ? "text-gradient-gold" : "",
+                          isHighlight && "text-gradient-gold",
                         )}
+                        style={
+                          isLuxe
+                            ? {
+                                background:
+                                  "linear-gradient(120deg, oklch(82% 0.1 70), oklch(90% 0.08 50), oklch(78% 0.12 30))",
+                                WebkitBackgroundClip: "text",
+                                backgroundClip: "text",
+                                color: "transparent",
+                              }
+                            : undefined
+                        }
                       >
                         {t(`${tier.key}.price` as "basic.price")}
                       </span>
-                      <span className="text-sm text-(--color-muted-foreground)">
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isLuxe
+                            ? "text-white/60"
+                            : "text-(--color-muted-foreground)",
+                        )}
+                      >
                         {t("currency")}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-(--color-muted-foreground)">
+                    <p
+                      className={cn(
+                        "mt-1 text-xs uppercase tracking-[0.18em]",
+                        isLuxe
+                          ? "text-white/50"
+                          : "text-(--color-muted-foreground)",
+                      )}
+                    >
                       {t("perEvent")}
                     </p>
 
-                    <div className="my-4 h-px bg-(--color-border) md:my-6" />
+                    <div
+                      className={cn(
+                        "my-4 h-px md:my-6",
+                        isLuxe ? "bg-white/15" : "bg-(--color-border)",
+                      )}
+                    />
 
                     <ul className="flex flex-1 flex-col gap-2.5 text-sm md:gap-3.5">
                       {Array.from({ length: tier.featureCount }, (_, j) => j + 1).map(
                         (k) => (
                           <li key={k} className="flex items-start gap-3">
-                            <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-(--color-accent)/60 text-(--color-primary)">
+                            <span
+                              className={cn(
+                                "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full",
+                                isLuxe
+                                  ? "bg-white/10 text-(--color-champagne)"
+                                  : "bg-(--color-accent)/60 text-(--color-primary)",
+                              )}
+                            >
                               <Check className="h-3 w-3" strokeWidth={3} />
                             </span>
                             <span>{t(`${tier.key}.f${k}` as "basic.f1")}</span>
@@ -131,12 +200,24 @@ export function Pricing() {
                       href="#lead"
                       className={cn(
                         "mt-5 md:mt-7",
-                        buttonVariants({
-                          variant: isHighlight ? "default" : "outline",
-                          size: "lg",
-                        }),
+                        !isLuxe &&
+                          buttonVariants({
+                            variant: isHighlight ? "default" : "outline",
+                            size: "lg",
+                          }),
                         isHighlight && "shadow-(--shadow-soft)",
+                        isLuxe &&
+                          "inline-flex h-11 items-center justify-center rounded-md px-8 text-sm font-medium shadow-(--shadow-soft) transition-all hover:opacity-90",
                       )}
+                      style={
+                        isLuxe
+                          ? {
+                              background:
+                                "linear-gradient(135deg, oklch(80% 0.1 60), oklch(88% 0.08 75))",
+                              color: "oklch(20% 0.04 35)",
+                            }
+                          : undefined
+                      }
                     >
                       {t("ctaSelect")}
                     </a>

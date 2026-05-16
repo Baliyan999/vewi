@@ -7,6 +7,8 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
+  useSpring,
+  type MotionValue,
   type Variants,
 } from "motion/react";
 import { Tv, Video, Mic, Hand, ShieldCheck, Send } from "lucide-react";
@@ -86,7 +88,7 @@ export function Features() {
 
   // Scale-aware total width — recomputed each transform call so the
   // pan distance always matches the actual rendered card sizes.
-  const x = useTransform(scrollYProgress, (v) => {
+  const xRaw = useTransform(scrollYProgress, (v) => {
     const s = scaleRef.current;
     const totalCardWidth = TILES.reduce((sum, t) => sum + t.w * s, 0);
     const trackTotalWidth =
@@ -94,6 +96,10 @@ export function Features() {
     const panDistance = Math.max(0, trackTotalWidth - vwRef.current);
     return -panDistance * v;
   });
+  // Spring-smoothed pan — wraps the scroll-driven xRaw in a soft spring
+  // so fast trackpad swipes ease into place instead of snapping. Low
+  // stiffness + reasonable damping gives that "buttered" feel.
+  const x = useSpring(xRaw, { stiffness: 80, damping: 28, mass: 0.6 });
 
   // Pre-compute each card's left-edge offset inside the track (in scaled
   // pixels). Each card uses this + the live `x` motion value to figure
@@ -278,16 +284,11 @@ function BentoCard({
     return 1 - normalized; // 1 = on-axis, 0 = at the edge
   });
 
-  // Focus drives a coverflow look: centre card sharper / larger /
-  // brighter / tilted flat; edge cards smaller, dimmer, with a slight
-  // Y-axis tilt and tiny blur (like passing pages in a magazine).
-  const coverflowScale = useTransform(focus, [0, 1], [0.86, 1]);
-  const coverflowOpacity = useTransform(focus, [0, 1], [0.55, 1]);
-  const coverflowBlur = useTransform(
-    focus,
-    [0, 0.6, 1],
-    ["3px", "1px", "0px"],
-  );
+  // Focus drives a subtle coverflow look: centre card larger / brighter;
+  // edge cards smaller and dimmer. No filter:blur — user explicitly
+  // didn't want text to look fuzzy. Card text stays crisp at all times.
+  const coverflowScale = useTransform(focus, [0, 1], [0.9, 1]);
+  const coverflowOpacity = useTransform(focus, [0, 1], [0.65, 1]);
   // Edge cards tilt: cards entering from the right rotate -Y, exiting
   // to the left rotate +Y. The sign of (cardCenter - viewportCenter)
   // tells us which side we're on.
@@ -296,7 +297,7 @@ function BentoCard({
     const cardCenter = xVal + cardLeft + (tile.w * scale) / 2;
     const offset = cardCenter - vw / 2; // negative = left of centre
     const norm = Math.max(-1, Math.min(1, offset / (vw / 2)));
-    return -norm * 14; // -14° to +14° around centre
+    return -norm * 10; // -10° to +10° around centre — softer than before
   });
 
   return (
@@ -311,9 +312,6 @@ function BentoCard({
         scale: reduce ? 1 : coverflowScale,
         opacity: reduce ? 1 : coverflowOpacity,
         rotateY: reduce ? 0 : rotateY,
-        filter: reduce
-          ? undefined
-          : (useTransform(coverflowBlur, (b) => `blur(${b})`) as unknown as string),
         transformPerspective: 1400,
         transformStyle: "preserve-3d",
         flexShrink: 0,

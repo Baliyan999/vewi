@@ -7,7 +7,6 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
-  useSpring,
   type MotionValue,
   type Variants,
 } from "motion/react";
@@ -18,19 +17,16 @@ import { DriftingOrbs, FloatingOrnaments } from "./parallax";
  * Features — "Что внутри". Bento-meets-horizontal-pan layout: the
  * section is tall and sticky-pinned for the duration of its scroll;
  * inside the pin, a horizontal track of bento-sized cards slides
- * leftward as the user scrolls down. Each card has its own width,
- * height and vertical offset so the row reads like a scattered
- * collage instead of a uniform grid.
+ * leftward as the user scrolls down.
  *
  * Pin math:
- *   section height        = 220vh
+ *   section height        = 180vh
  *   sticky child height   = 100vh
- *   pin scroll budget     = 120vh (~ 1296px on 1080) → driven by
- *                           useScroll offset "start start" → "start -120%"
- *
- * The track's negative translateX is sized so its right edge lands at
- * the viewport's right padding exactly at progress = 1, making the
- * end of the pan feel "settled" rather than left mid-motion.
+ *   pin scroll budget     = 80vh (~ 864px on 1080)
+ *   pan distance          ≈ 780px on a 1920-wide viewport
+ *   ratio                 ≈ 0.9 — close to 1:1 so cards visually
+ *                           keep pace with the scroll wheel and the
+ *                           horizontal pan never feels sluggish.
  */
 
 const ICONS = [Tv, Video, Mic, Hand, ShieldCheck, Send] as const;
@@ -56,7 +52,10 @@ export function Features() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start start", "start -120%"],
+    // 180vh section − 100vh sticky child = 80vh pin window. Mapping
+    // progress 0→1 across that range keeps pan velocity close to the
+    // user's scroll velocity (≈ 1:1) so cards don't drag behind.
+    offset: ["start start", "start -80%"],
   });
 
   // Viewport size measured on mount + on resize. Cards scale by
@@ -88,7 +87,12 @@ export function Features() {
 
   // Scale-aware total width — recomputed each transform call so the
   // pan distance always matches the actual rendered card sizes.
-  const xRaw = useTransform(scrollYProgress, (v) => {
+  // Direct 1:1 mapping to scrollYProgress. No spring smoothing because
+  // a spring lags behind the scroll, which reads as "the cards are
+  // sluggish" — user wanted responsive but smooth. Native browser
+  // scroll already provides the smoothness; we just need a tight
+  // mapping from scroll → x.
+  const x = useTransform(scrollYProgress, (v) => {
     const s = scaleRef.current;
     const totalCardWidth = TILES.reduce((sum, t) => sum + t.w * s, 0);
     const trackTotalWidth =
@@ -96,10 +100,20 @@ export function Features() {
     const panDistance = Math.max(0, trackTotalWidth - vwRef.current);
     return -panDistance * v;
   });
-  // Spring-smoothed pan — wraps the scroll-driven xRaw in a soft spring
-  // so fast trackpad swipes ease into place instead of snapping. Low
-  // stiffness + reasonable damping gives that "buttered" feel.
-  const x = useSpring(xRaw, { stiffness: 80, damping: 28, mass: 0.6 });
+
+  // Progress for the bottom indicator — derived from the actual pan
+  // position (x value) rather than scrollYProgress directly. This
+  // guarantees the bar fills to 100% exactly when the cards have
+  // finished panning, with no rounding/lag mismatch between the two.
+  const barScaleX = useTransform(x, (xVal) => {
+    const s = scaleRef.current;
+    const totalCardWidth = TILES.reduce((sum, t) => sum + t.w * s, 0);
+    const trackTotalWidth =
+      totalCardWidth + GAP * (TILES.length - 1) + SIDE_PADDING * 2;
+    const panDistance = Math.max(0, trackTotalWidth - vwRef.current);
+    if (panDistance === 0) return 0;
+    return Math.min(1, Math.max(0, -xVal / panDistance));
+  });
 
   // Pre-compute each card's left-edge offset inside the track (in scaled
   // pixels). Each card uses this + the live `x` motion value to figure
@@ -125,7 +139,7 @@ export function Features() {
       id="features"
       ref={sectionRef}
       className="relative"
-      style={{ height: "220vh" }}
+      style={{ height: "180vh" }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-x-clip pt-20 pb-8 md:pt-24 md:pb-12">
         <DriftingOrbs variant="mix" />
@@ -190,14 +204,14 @@ export function Features() {
           </motion.div>
         </div>
 
-        {/* Scroll progress bar at the bottom of the pinned viewport.
-            Mirrors the pan position so the user understands they're
-            inside a multi-step horizontal sequence. */}
+        {/* Scroll progress bar — tied to the actual pan position so it
+            fills exactly when the rightmost card lands at the viewport
+            edge, never short. */}
         {!reduce && (
           <div className="relative mx-auto mt-4 h-[3px] w-40 overflow-hidden rounded-full bg-(--color-border) sm:w-56">
             <motion.div
               style={{
-                scaleX: scrollYProgress,
+                scaleX: barScaleX,
                 transformOrigin: "left",
               }}
               className="h-full w-full bg-gradient-to-r from-(--color-primary) via-(--color-rose) to-(--color-champagne)"

@@ -57,23 +57,26 @@ export function Features() {
     offset: ["start start", "start -120%"],
   });
 
-  // Compute the horizontal track's total width.
-  const totalCardWidth = TILES.reduce((s, t) => s + t.w, 0);
-  const trackTotalWidth =
-    totalCardWidth + GAP * (TILES.length - 1) + SIDE_PADDING * 2;
-
-  // Viewport width is measured on mount + on resize. Motion's
-  // useTransform can't interpolate `calc(...vw)` strings, so the pan
-  // distance has to be a real pixel number. We use a ref so the
-  // transform function picks up the latest value without forcing a
-  // re-create of the motion value.
+  // Viewport size measured on mount + on resize. Cards scale by
+  // viewport HEIGHT so the entire horizontal track fits inside the
+  // visible area on any aspect ratio (16:9 was fine, 16:10 was
+  // clipping the bottom of the taller cards). Track width is
+  // recomputed from the scaled sizes so the horizontal pan distance
+  // also adjusts to the new geometry.
   const vwRef = useRef(0);
+  const scaleRef = useRef(1);
   const [, setReady] = useState(false);
   useEffect(() => {
     const update = () => {
       vwRef.current = window.innerWidth;
-      // Force a single re-render so the initial transform recalculates
-      // with the actual viewport width instead of 0.
+      // Card sizes target 1080-tall viewports. Below that we scale
+      // everything down proportionally (clamped to 0.7 so they don't
+      // get unreadably small on cramped windows). At 1080+ we keep
+      // the full size.
+      scaleRef.current = Math.min(
+        1,
+        Math.max(0.7, window.innerHeight / 1080),
+      );
       setReady((r) => !r);
     };
     update();
@@ -81,9 +84,13 @@ export function Features() {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // x = -(panDistance * progress). panDistance is the leftover track
-  // width that needs to scroll past the viewport.
+  // Scale-aware total width — recomputed each transform call so the
+  // pan distance always matches the actual rendered card sizes.
   const x = useTransform(scrollYProgress, (v) => {
+    const s = scaleRef.current;
+    const totalCardWidth = TILES.reduce((sum, t) => sum + t.w * s, 0);
+    const trackTotalWidth =
+      totalCardWidth + GAP * (TILES.length - 1) + SIDE_PADDING * 2;
     const panDistance = Math.max(0, trackTotalWidth - vwRef.current);
     return -panDistance * v;
   });
@@ -98,7 +105,7 @@ export function Features() {
       className="relative"
       style={{ height: "220vh" }}
     >
-      <div className="sticky top-0 flex h-screen flex-col overflow-x-clip pt-24 pb-12 md:pt-32 md:pb-16">
+      <div className="sticky top-0 flex h-screen flex-col overflow-x-clip pt-20 pb-8 md:pt-24 md:pb-12">
         <DriftingOrbs variant="mix" />
         <FloatingOrnaments count={14} hueBase={20} hueSpread={70} />
 
@@ -147,6 +154,7 @@ export function Features() {
               <BentoCard
                 key={i}
                 tile={tile}
+                scale={scaleRef.current || 1}
                 index={i}
                 Icon={ICONS[i]}
                 title={t(`f${i + 1}Title` as "f1Title")}
@@ -218,6 +226,7 @@ function TitleReveal({
 
 function BentoCard({
   tile,
+  scale,
   index,
   Icon,
   title,
@@ -225,6 +234,7 @@ function BentoCard({
   reduce,
 }: {
   tile: (typeof TILES)[number];
+  scale: number;
   index: number;
   Icon: (typeof ICONS)[number];
   title: string;
@@ -237,9 +247,9 @@ function BentoCard({
       initial="rest"
       animate="rest"
       style={{
-        width: tile.w,
-        height: tile.h,
-        translateY: reduce ? 0 : tile.offsetY,
+        width: tile.w * scale,
+        height: tile.h * scale,
+        translateY: reduce ? 0 : tile.offsetY * scale,
         flexShrink: 0,
       }}
       className="relative"

@@ -1,46 +1,52 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   motion,
   useScroll,
   useTransform,
   useReducedMotion,
-  useMotionValue,
-  useSpring,
-  type MotionValue,
   type Variants,
 } from "motion/react";
 import { Tv, Video, Mic, Hand, ShieldCheck, Send } from "lucide-react";
 import { DriftingOrbs, FloatingOrnaments } from "./parallax";
 
 /**
- * Features ("Что внутри") — 6 cards highlighting product capabilities.
- * Modernized to share the motion language of the rest of the page:
+ * Features — "Что внутри". Bento-meets-horizontal-pan layout: the
+ * section is tall and sticky-pinned for the duration of its scroll;
+ * inside the pin, a horizontal track of bento-sized cards slides
+ * leftward as the user scrolls down. Each card has its own width,
+ * height and vertical offset so the row reads like a scattered
+ * collage instead of a uniform grid.
  *
- *   • Word-by-word title reveal + ⋄ ⋄ ⋄ eyebrow letter-spacing tween.
- *   • Section-wide cursor spotlight (soft champagne halo following the
- *     mouse, spring-smoothed).
- *   • Each FeatureCard:
- *       - 3D tilt driven by motion values + springs (no setState, no
- *         re-renders per pointer-move).
- *       - Hover detection via outer wrapper + variants on inner content
- *         so the hover state can't unhover itself when the card lifts.
- *       - Per-card hue accent — index-based rotation through the warm
- *         palette so the grid reads as a sequence of related-but-not-
- *         identical chips.
- *       - Numbered chip in top-right corner.
- *       - Animated icon container that grows + glows on hover.
- *       - Cursor-following highlight inside the card body.
- *       - Scroll-driven staggered entrance (rotateY + translateZ + opacity).
+ * Pin math:
+ *   section height        = 220vh
+ *   sticky child height   = 100vh
+ *   pin scroll budget     = 120vh (~ 1296px on 1080) → driven by
+ *                           useScroll offset "start start" → "start -120%"
+ *
+ * The track's negative translateX is sized so its right edge lands at
+ * the viewport's right padding exactly at progress = 1, making the
+ * end of the pan feel "settled" rather than left mid-motion.
  */
 
 const ICONS = [Tv, Video, Mic, Hand, ShieldCheck, Send] as const;
-// Per-card warm-spectrum hue. Reads sequentially: rose → champagne →
-// gold → champagne → rose-tan → mid. Creates visual rhythm without
-// breaking the brand palette.
-const HUES = [25, 40, 55, 70, 30, 50] as const;
+
+// Bento card geometry. Width / height in pixels, with an optional Y
+// offset so adjacent cards don't sit on the same baseline. The hue is
+// the warm accent tint applied behind the icon.
+const TILES = [
+  { w: 520, h: 440, offsetY: 0,  hue: 25 }, // 1 — Живой слайдшоу (hero card, biggest)
+  { w: 320, h: 380, offsetY: 60, hue: 50 }, // 2 — Видео-поздравления (compact, lifted)
+  { w: 360, h: 460, offsetY: 0,  hue: 70 }, // 3 — Голосовая гостевая книга (tall)
+  { w: 460, h: 360, offsetY: 80, hue: 35 }, // 4 — Модерация одним свайпом (wide, sunk)
+  { w: 340, h: 440, offsetY: 20, hue: 20 }, // 5 — Геофенс и защита
+  { w: 380, h: 380, offsetY: 100, hue: 55 }, // 6 — Telegram-бот (sunk)
+] as const;
+
+const GAP = 32; // px between cards
+const SIDE_PADDING = 80; // px on each side of the track (leading/trailing breathing room)
 
 export function Features() {
   const t = useTranslations("features");
@@ -48,58 +54,58 @@ export function Features() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start 80%", "end 30%"],
+    offset: ["start start", "start -120%"],
   });
 
-  // Cursor spotlight tracking (section-wide).
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  const spotX = useSpring(cursorX, { stiffness: 120, damping: 24, mass: 0.6 });
-  const spotY = useSpring(cursorY, { stiffness: 120, damping: 24, mass: 0.6 });
+  // Compute the horizontal track's total width.
+  const totalCardWidth = TILES.reduce((s, t) => s + t.w, 0);
+  const trackTotalWidth =
+    totalCardWidth + GAP * (TILES.length - 1) + SIDE_PADDING * 2;
 
-  function onMove(e: React.MouseEvent<HTMLElement>) {
-    if (!sectionRef.current) return;
-    const r = sectionRef.current.getBoundingClientRect();
-    cursorX.set(e.clientX - r.left);
-    cursorY.set(e.clientY - r.top);
-  }
+  // Viewport width is measured on mount + on resize. Motion's
+  // useTransform can't interpolate `calc(...vw)` strings, so the pan
+  // distance has to be a real pixel number. We use a ref so the
+  // transform function picks up the latest value without forcing a
+  // re-create of the motion value.
+  const vwRef = useRef(0);
+  const [, setReady] = useState(false);
+  useEffect(() => {
+    const update = () => {
+      vwRef.current = window.innerWidth;
+      // Force a single re-render so the initial transform recalculates
+      // with the actual viewport width instead of 0.
+      setReady((r) => !r);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
-  // Gentle title parallax through the section lifecycle.
-  const titleY = useTransform(scrollYProgress, [0, 1], ["20%", "-15%"]);
+  // x = -(panDistance * progress). panDistance is the leftover track
+  // width that needs to scroll past the viewport.
+  const x = useTransform(scrollYProgress, (v) => {
+    const panDistance = Math.max(0, trackTotalWidth - vwRef.current);
+    return -panDistance * v;
+  });
 
-  const items = [1, 2, 3, 4, 5, 6] as const;
+  // Eyebrow + title parallax — these sit above the track inside the pin.
+  const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
 
   return (
     <section
       id="features"
       ref={sectionRef}
-      onMouseMove={reduce ? undefined : onMove}
-      // overflow-x-clip lets the DriftingOrbs blend with whatever decoration
-      // is bleeding out of GalleryPreview above — removes the horizontal
-      // seam at the section boundary.
-      className="relative overflow-x-clip py-20 md:py-32"
+      className="relative"
+      style={{ height: "220vh" }}
     >
-      {/* Cursor spotlight — soft champagne halo following the cursor. */}
-      {!reduce && (
-        <motion.div
-          aria-hidden
-          style={{
-            left: spotX,
-            top: spotY,
-            translateX: "-50%",
-            translateY: "-50%",
-          }}
-          className="pointer-events-none absolute -z-10 h-[640px] w-[640px] rounded-full bg-(--color-rose)/12 opacity-70 blur-3xl"
-        />
-      )}
+      <div className="sticky top-0 flex h-screen flex-col overflow-x-clip pt-24 pb-12 md:pt-32 md:pb-16">
+        <DriftingOrbs variant="mix" />
+        <FloatingOrnaments count={14} hueBase={20} hueSpread={70} />
 
-      <DriftingOrbs variant="mix" />
-      <FloatingOrnaments count={18} hueBase={20} hueSpread={70} />
-
-      <div className="container-page relative">
+        {/* Title block — stays put while the track pans below it */}
         <motion.div
           style={{ y: reduce ? 0 : titleY }}
-          className="mx-auto mb-12 max-w-2xl text-center md:mb-16"
+          className="relative mx-auto mb-10 max-w-2xl px-6 text-center md:mb-14"
         >
           <motion.p
             initial={{ opacity: 0, letterSpacing: "0.5em" }}
@@ -126,29 +132,51 @@ export function Features() {
           </motion.p>
         </motion.div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((i, idx) => {
-            const Icon = ICONS[i - 1];
-            return (
-              <FeatureCard
+        {/* Horizontal track — pans left as user scrolls down */}
+        <div className="relative flex-1">
+          <motion.div
+            style={{
+              x: reduce ? 0 : x,
+              paddingLeft: SIDE_PADDING,
+              paddingRight: SIDE_PADDING,
+              gap: GAP,
+            }}
+            className="flex h-full items-center"
+          >
+            {TILES.map((tile, i) => (
+              <BentoCard
                 key={i}
-                index={idx}
-                number={i}
-                hue={HUES[idx]}
-                icon={<Icon className="h-6 w-6" strokeWidth={1.5} />}
-                title={t(`f${i}Title` as "f1Title")}
-                desc={t(`f${i}Desc` as "f1Desc")}
-                progress={scrollYProgress}
+                tile={tile}
+                index={i}
+                Icon={ICONS[i]}
+                title={t(`f${i + 1}Title` as "f1Title")}
+                desc={t(`f${i + 1}Desc` as "f1Desc")}
                 reduce={reduce ?? false}
               />
-            );
-          })}
+            ))}
+          </motion.div>
         </div>
+
+        {/* Scroll progress bar at the bottom of the pinned viewport.
+            Mirrors the pan position so the user understands they're
+            inside a multi-step horizontal sequence. */}
+        {!reduce && (
+          <div className="relative mx-auto mt-4 h-[3px] w-40 overflow-hidden rounded-full bg-(--color-border) sm:w-56">
+            <motion.div
+              style={{
+                scaleX: scrollYProgress,
+                transformOrigin: "left",
+              }}
+              className="h-full w-full bg-gradient-to-r from-(--color-primary) via-(--color-rose) to-(--color-champagne)"
+            />
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
+/** Word-by-word title reveal. */
 function TitleReveal({
   text,
   className,
@@ -156,7 +184,7 @@ function TitleReveal({
   text: string;
   className?: string;
 }) {
-  const wordVariants: Variants = {
+  const variants: Variants = {
     hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
     visible: (i: number) => ({
       opacity: 1,
@@ -175,7 +203,7 @@ function TitleReveal({
         <motion.span
           key={i}
           custom={i}
-          variants={wordVariants}
+          variants={variants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.4 }}
@@ -188,214 +216,93 @@ function TitleReveal({
   );
 }
 
-function FeatureCard({
+function BentoCard({
+  tile,
   index,
-  number,
-  hue,
-  icon,
+  Icon,
   title,
   desc,
-  progress,
   reduce,
 }: {
+  tile: (typeof TILES)[number];
   index: number;
-  number: number;
-  hue: number;
-  icon: React.ReactNode;
+  Icon: (typeof ICONS)[number];
   title: string;
   desc: string;
-  progress: MotionValue<number>;
   reduce: boolean;
 }) {
-  // 3D tilt driven by motion values (no React state, no per-frame rerenders).
-  const cardRef = useRef<HTMLDivElement>(null);
-  const px = useMotionValue(0.5);
-  const py = useMotionValue(0.5);
-  const rotX = useSpring(useTransform(py, [0, 1], [8, -8]), {
-    stiffness: 180,
-    damping: 22,
-  });
-  const rotY = useSpring(useTransform(px, [0, 1], [-10, 10]), {
-    stiffness: 180,
-    damping: 22,
-  });
-  // Highlight follows the cursor inside the card body — recomputed
-  // on each pointer move via a derived CSS variable on the card.
-  const highlightX = useTransform(px, (v) => `${v * 100}%`);
-  const highlightY = useTransform(py, (v) => `${v * 100}%`);
-
-  function onCardMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (reduce) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    px.set((e.clientX - r.left) / r.width);
-    py.set((e.clientY - r.top) / r.height);
-  }
-  function resetTilt() {
-    px.set(0.5);
-    py.set(0.5);
-  }
-
-  // Per-card staggered scroll entrance. 6 cards split the first 60% of
-  // the section's scroll budget — every card finishes its reveal before
-  // the section title hits mid-viewport.
-  const total = 6;
-  const enterStart = (index / total) * 0.3;
-  const enterEnd = enterStart + 0.18;
-  const enterOpacity = useTransform(
-    progress,
-    [enterStart, enterEnd],
-    [0, 1],
-  );
-  const enterY = useTransform(progress, [enterStart, enterEnd], [40, 0]);
-  const enterRotateX = useTransform(
-    progress,
-    [enterStart, enterEnd],
-    [20, 0],
-  );
-  const enterScale = useTransform(progress, [enterStart, enterEnd], [0.88, 1]);
-
   return (
     <motion.div
-      // Outer = stable hover surface (doesn't move on hover). Inner = the
-      // visible card that tilts, lifts, glows. This prevents the hover-
-      // unhover jitter loop that bites when the lifting element is the
-      // same one whose hover state is being detected.
-      style={
-        reduce
-          ? undefined
-          : {
-              opacity: enterOpacity,
-              y: enterY,
-              rotateX: enterRotateX,
-              scale: enterScale,
-              transformPerspective: 1200,
-              transformStyle: "preserve-3d",
-            }
-      }
       whileHover="hover"
       initial="rest"
       animate="rest"
-      onMouseMove={onCardMove}
-      onMouseLeave={resetTilt}
-      className="relative h-full"
+      style={{
+        width: tile.w,
+        height: tile.h,
+        translateY: reduce ? 0 : tile.offsetY,
+        flexShrink: 0,
+      }}
+      className="relative"
     >
       <motion.div
-        ref={cardRef}
         variants={{
           rest: { y: 0, boxShadow: "var(--shadow-soft)" },
           hover: {
-            y: -6,
+            y: -8,
             boxShadow:
-              "0 24px 50px -12px rgb(180 130 100 / 0.35), 0 0 0 1px oklch(92% 0.04 60)",
+              "0 30px 60px -16px rgb(180 130 100 / 0.4), 0 0 0 1px oklch(92% 0.04 60)",
           },
         }}
-        transition={{ type: "spring", stiffness: 220, damping: 22 }}
-        style={{
-          rotateX: reduce ? 0 : rotX,
-          rotateY: reduce ? 0 : rotY,
-          transformStyle: "preserve-3d",
-        }}
-        className="surface-card group relative h-full overflow-hidden rounded-(--radius-lg) p-5 sm:p-7"
+        transition={{ type: "spring", stiffness: 220, damping: 24 }}
+        className="surface-card group relative flex h-full w-full flex-col overflow-hidden rounded-(--radius-xl) p-6 sm:p-8"
       >
-        {/* Per-card hue accent glow — sits behind content, intensifies on
-            hover. Different hue per card adds variety to the grid. */}
+        {/* Per-card hue glow — large blurry orb in the corner */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full opacity-30 blur-2xl transition-opacity duration-500 group-hover:opacity-90"
-          style={{ background: `oklch(86% 0.08 ${hue})` }}
+          className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full opacity-40 blur-3xl transition-opacity duration-500 group-hover:opacity-80"
+          style={{ background: `oklch(85% 0.1 ${tile.hue})` }}
         />
 
-        {/* Cursor-following highlight inside card body */}
-        {!reduce && (
+        {/* Icon + ordinal — top row, simple and quiet */}
+        <div className="relative flex items-start justify-between">
           <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            style={{
-              background: `radial-gradient(circle 220px at ${highlightX} ${highlightY}, oklch(98% 0.06 ${hue} / 0.6), transparent 65%)`,
-            }}
-          />
-        )}
-
-        {/* Animated gradient border on hover */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-(--radius-lg) opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          style={{
-            padding: "1px",
-            background: `linear-gradient(135deg,
-              oklch(70% 0.12 ${hue}) 0%,
-              oklch(85% 0.06 ${hue + 30}) 50%,
-              oklch(70% 0.12 ${hue - 10}) 100%)`,
-            WebkitMask:
-              "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-          }}
-        />
-
-        {/* Numbered chip — top-right corner */}
-        <motion.span
-          variants={{
-            rest: { scale: 1, opacity: 0.4 },
-            hover: { scale: 1.05, opacity: 1 },
-          }}
-          transition={{ type: "spring", stiffness: 280, damping: 20 }}
-          className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full bg-(--color-background) text-[10px] font-medium text-(--color-primary) shadow-(--shadow-soft) sm:right-5 sm:top-5 sm:h-7 sm:w-7 sm:text-xs"
-          style={{
-            border: `1px solid oklch(88% 0.05 ${hue})`,
-          }}
-        >
-          {String(number).padStart(2, "0")}
-        </motion.span>
-
-        {/* Icon container — gradient bg + per-card hue accent + hover-pulse */}
-        <motion.div
-          variants={{
-            rest: { scale: 1, rotate: 0 },
-            hover: { scale: 1.08, rotate: -4 },
-          }}
-          transition={{ type: "spring", stiffness: 240, damping: 18 }}
-          className="relative mb-5 grid h-12 w-12 place-items-center rounded-xl text-(--color-primary)"
-          style={{
-            background: `linear-gradient(135deg, oklch(95% 0.05 ${hue}), oklch(88% 0.08 ${hue - 5}))`,
-            transform: "translateZ(30px)",
-            boxShadow: `0 6px 16px -8px oklch(70% 0.1 ${hue} / 0.5)`,
-          }}
-        >
-          {icon}
-          {/* Pulse ring — animates outward continuously, hidden in idle,
-              visible on hover */}
-          <motion.span
-            aria-hidden
             variants={{
-              rest: { opacity: 0, scale: 0.8 },
-              hover: { opacity: [0, 0.7, 0], scale: [0.8, 1.6, 1.6] },
+              rest: { scale: 1, rotate: 0 },
+              hover: { scale: 1.06, rotate: -3 },
             }}
-            transition={{
-              repeat: Infinity,
-              duration: 1.6,
-              ease: "easeOut",
+            transition={{ type: "spring", stiffness: 240, damping: 18 }}
+            className="grid h-14 w-14 place-items-center rounded-2xl text-(--color-primary)"
+            style={{
+              background: `linear-gradient(135deg,
+                oklch(96% 0.04 ${tile.hue}),
+                oklch(88% 0.08 ${tile.hue - 5}))`,
+              boxShadow: `0 8px 20px -8px oklch(70% 0.1 ${tile.hue} / 0.45)`,
             }}
-            className="pointer-events-none absolute inset-0 rounded-xl border-2"
-            style={{ borderColor: `oklch(70% 0.1 ${hue})` }}
-          />
-        </motion.div>
+          >
+            <Icon className="h-7 w-7" strokeWidth={1.5} />
+          </motion.div>
+          <span
+            className="font-display text-3xl text-(--color-muted-foreground)/30"
+            aria-hidden
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
+        </div>
+
+        {/* Spacer pushes title+desc to the bottom */}
+        <div className="flex-1" />
 
         <motion.h3
           variants={{
-            rest: { x: 0 },
-            hover: { x: 3 },
+            rest: { y: 0 },
+            hover: { y: -2 },
           }}
           transition={{ type: "spring", stiffness: 240, damping: 20 }}
           className="relative mb-2 text-xl md:text-2xl"
-          style={{ transform: "translateZ(20px)" }}
         >
           {title}
         </motion.h3>
-        <p
-          className="relative text-sm leading-relaxed text-(--color-muted-foreground) transition-colors duration-500 group-hover:text-(--color-foreground)"
-          style={{ transform: "translateZ(10px)" }}
-        >
+        <p className="relative text-pretty text-sm leading-relaxed text-(--color-muted-foreground) sm:text-base">
           {desc}
         </p>
       </motion.div>

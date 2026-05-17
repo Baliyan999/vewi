@@ -7,15 +7,12 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
-  useMotionValue,
-  useSpring,
   type MotionValue,
   type Variants,
 } from "motion/react";
 import { QrCode, Camera, Heart } from "lucide-react";
 import { Reveal } from "./reveal";
 import { MouseTilt, FloatingOrnaments } from "./parallax";
-import { Rings } from "./ornaments";
 
 const ICONS = [QrCode, Camera, Heart] as const;
 // Each step "ignites" (gets a pulse ring + scale-up) when scrollYProgress
@@ -32,20 +29,6 @@ export function How() {
     offset: ["start 80%", "end 30%"],
   });
 
-  // Cursor coordinates relative to the section. A soft spotlight follows
-  // the cursor and gently lights up whatever the user is hovering over.
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  const spotX = useSpring(cursorX, { stiffness: 120, damping: 24, mass: 0.6 });
-  const spotY = useSpring(cursorY, { stiffness: 120, damping: 24, mass: 0.6 });
-
-  function onSectionMouseMove(e: React.MouseEvent<HTMLElement>) {
-    if (!sectionRef.current) return;
-    const r = sectionRef.current.getBoundingClientRect();
-    cursorX.set(e.clientX - r.left);
-    cursorY.set(e.clientY - r.top);
-  }
-
   // Master scroll-driven motion values for the timeline.
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const cometTop = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
@@ -55,11 +38,6 @@ export function How() {
     [0, 1, 1, 0],
   );
 
-  // Background parallax — rings drift further than the title, title floats
-  // gently against them for depth.
-  const ringsY = useTransform(scrollYProgress, [0, 1], ["-20%", "40%"]);
-  const ringsRotate = useTransform(scrollYProgress, [0, 1], [-12, 10]);
-  const haloY = useTransform(scrollYProgress, [0, 1], ["30%", "-20%"]);
   const titleY = useTransform(scrollYProgress, [0, 1], ["25%", "-12%"]);
 
   const steps = [1, 2, 3] as const;
@@ -68,48 +46,8 @@ export function How() {
     <section
       id="how"
       ref={sectionRef}
-      onMouseMove={reduce ? undefined : onSectionMouseMove}
       className="relative overflow-hidden py-20 md:py-32"
     >
-      {/* Cursor spotlight — wide soft rose halo following the cursor.
-          Anchored at top/left, then centered on the cursor with -50%
-          translate. Spring-smoothed so motion feels gentle, not jittery. */}
-      {!reduce && (
-        <motion.div
-          aria-hidden
-          style={{
-            left: spotX,
-            top: spotY,
-            translateX: "-50%",
-            translateY: "-50%",
-          }}
-          className="pointer-events-none absolute -z-10 h-[520px] w-[520px] rounded-full bg-(--color-rose)/15 opacity-60 blur-3xl"
-        />
-      )}
-
-      {/* Background depth layers — concentric rings on the right and a soft
-          champagne halo on the left, each drifting at different speeds. */}
-      <motion.div
-        aria-hidden
-        style={{
-          y: reduce ? 0 : ringsY,
-          rotate: reduce ? 0 : ringsRotate,
-        }}
-        className="pointer-events-none absolute -right-32 top-20 -z-10 opacity-30"
-      >
-        <Rings size={720} />
-      </motion.div>
-      <motion.div
-        aria-hidden
-        style={{ y: reduce ? 0 : haloY }}
-        className="pointer-events-none absolute -left-40 top-1/3 -z-10 h-[520px] w-[520px] rounded-full bg-(--color-champagne)/30 blur-3xl"
-      />
-      <motion.div
-        aria-hidden
-        style={{ y: reduce ? 0 : ringsY }}
-        className="pointer-events-none absolute right-1/4 -bottom-20 -z-10 h-[420px] w-[420px] rounded-full bg-(--color-rose)/25 blur-3xl"
-      />
-
       <FloatingOrnaments count={14} hueBase={25} hueSpread={70} />
 
       <div className="container-page relative">

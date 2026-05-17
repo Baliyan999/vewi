@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { Check } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Reveal, Stagger, StaggerItem } from "./reveal";
-import { DriftingOrbs, FloatingOrnaments, ParallaxY } from "./parallax";
+import { FloatingOrnaments, ParallaxY } from "./parallax";
 import { cn } from "@/lib/utils";
 
 const TIERS = [
@@ -34,7 +34,6 @@ export function Pricing() {
         paddingBottom: "clamp(1.5rem, 5vh, 6rem)",
       }}
     >
-      <DriftingOrbs variant="champagne" />
       <FloatingOrnaments count={14} hueBase={45} />
 
       <div className="container-page relative">

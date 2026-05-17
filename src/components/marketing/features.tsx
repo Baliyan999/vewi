@@ -11,7 +11,7 @@ import {
   type Variants,
 } from "motion/react";
 import { Tv, Video, Mic, Hand, ShieldCheck, Send } from "lucide-react";
-import { DriftingOrbs, FloatingOrnaments } from "./parallax";
+import { FloatingOrnaments } from "./parallax";
 
 /**
  * Features — "Что внутри". Bento-meets-horizontal-pan layout: the
@@ -142,7 +142,6 @@ export function Features() {
       style={{ height: "180vh" }}
     >
       <div className="sticky top-0 flex h-screen flex-col overflow-x-clip pt-20 pb-8 md:pt-24 md:pb-12">
-        <DriftingOrbs variant="mix" />
         <FloatingOrnaments count={14} hueBase={20} hueSpread={70} />
 
         {/* Title block — stays put while the track pans below it */}

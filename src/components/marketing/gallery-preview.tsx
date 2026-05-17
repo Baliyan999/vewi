@@ -5,9 +5,6 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
-  useMotionValue,
-  useSpring,
-  type MotionValue,
   type Variants,
 } from "motion/react";
 import { useRef } from "react";
@@ -39,13 +36,6 @@ const TILES = [
   { ar: "4/5", hue: 35, x: 86, y: 50, w: 14, drift: 90, rot: -1 },
 ] as const;
 
-const BACK_TILES = [
-  { hue: 70, x: 12, y: 30, w: 16, drift: -200 },
-  { hue: 30, x: 70, y: 20, w: 18, drift: -240 },
-  { hue: 55, x: 48, y: 76, w: 14, drift: 220 },
-  { hue: 25, x: 88, y: 40, w: 12, drift: 180 },
-] as const;
-
 const ICON_TYPES = ["💍", "🥂", "💐", "💌", "💃", "📸", "🌸", "✨"] as const;
 
 export function GalleryPreview() {
@@ -55,19 +45,6 @@ export function GalleryPreview() {
     target: ref,
     offset: ["start end", "end start"],
   });
-
-  // Section-wide cursor tracking for the spotlight.
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  const spotX = useSpring(cursorX, { stiffness: 120, damping: 24, mass: 0.6 });
-  const spotY = useSpring(cursorY, { stiffness: 120, damping: 24, mass: 0.6 });
-
-  function onMove(e: React.MouseEvent<HTMLElement>) {
-    if (!ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    cursorX.set(e.clientX - r.left);
-    cursorY.set(e.clientY - r.top);
-  }
 
   const titleY = useTransform(scrollYProgress, [0, 1], ["35%", "-25%"]);
   const sceneScale = useTransform(
@@ -86,39 +63,8 @@ export function GalleryPreview() {
   return (
     <section
       ref={ref}
-      onMouseMove={reduce ? undefined : onMove}
-      // overflow-x-clip (not overflow-hidden) — decorative back-tiles,
-      // cursor spotlight and ornaments are allowed to bleed vertically
-      // into the next section, so the warm tint fades smoothly into the
-      // Features section's own overlays instead of cutting off as a
-      // visible horizontal seam at the section boundary.
       className="relative overflow-x-clip py-24 md:py-32"
     >
-      {/* Cursor spotlight — soft champagne halo following the cursor. */}
-      {!reduce && (
-        <motion.div
-          aria-hidden
-          style={{
-            left: spotX,
-            top: spotY,
-            translateX: "-50%",
-            translateY: "-50%",
-          }}
-          className="pointer-events-none absolute -z-10 h-[640px] w-[640px] rounded-full bg-(--color-champagne)/20 opacity-70 blur-3xl"
-        />
-      )}
-
-      <div className="pointer-events-none absolute inset-0 opacity-50 blur-sm">
-        {BACK_TILES.map((tile, i) => (
-          <BackTile
-            key={i}
-            progress={scrollYProgress}
-            tile={tile}
-            reduce={reduce ?? false}
-          />
-        ))}
-      </div>
-
       <FloatingOrnaments count={16} hueBase={30} />
 
       <div className="container-page relative">
@@ -340,27 +286,3 @@ function ParallaxTile({
   );
 }
 
-function BackTile({
-  progress,
-  tile,
-  reduce,
-}: {
-  progress: ReturnType<typeof useScroll>["scrollYProgress"];
-  tile: (typeof BACK_TILES)[number];
-  reduce: boolean;
-}) {
-  const y = useTransform(progress, [0, 1], [0, tile.drift]);
-  return (
-    <motion.div
-      style={{
-        y: reduce ? 0 : y,
-        left: `${tile.x}%`,
-        top: `${tile.y}%`,
-        width: `${tile.w}%`,
-        aspectRatio: "1/1",
-        background: `linear-gradient(135deg, oklch(92% 0.05 ${tile.hue}), oklch(75% 0.09 ${tile.hue + 8}))`,
-      }}
-      className="absolute rounded-(--radius-md)"
-    />
-  );
-}

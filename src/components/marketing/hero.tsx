@@ -42,8 +42,6 @@ export function Hero() {
     offset: ["start start", "end start"],
   });
 
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
-  const midY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
   const titleScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
   const titleOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
@@ -57,24 +55,6 @@ export function Hero() {
       ref={ref}
       className="relative isolate overflow-hidden pt-[calc(env(safe-area-inset-top,0)+5.5rem)] md:pt-24"
     >
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-30"
-        style={{ y: reduce ? 0 : bgY }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-(--color-rose)/30 via-transparent to-(--color-champagne)/40" />
-      </motion.div>
-
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-20"
-        style={{ y: reduce ? 0 : midY }}
-      >
-        <div className="absolute -top-32 left-1/4 h-[520px] w-[520px] rounded-full bg-(--color-champagne)/50 blur-3xl" />
-        <div className="absolute top-32 right-0 h-[480px] w-[480px] rounded-full bg-(--color-rose)/45 blur-3xl animate-drift" />
-        <div className="absolute -left-24 bottom-10 h-[360px] w-[360px] rounded-full bg-(--color-accent)/35 blur-3xl" />
-      </motion.div>
-
       <PointerParallaxScene range={40} className="absolute inset-0 -z-10">
         <PointerLayer depth={0.2}>
           <Sparkle x="10%" y="22%" size={18} delay={0.2} />
@@ -225,12 +205,6 @@ export function Hero() {
         </MouseTilt>
       </motion.div>
 
-      {/* Long, soft fade so Hero's rose/champagne overlays melt into
-       * the body color without a visible boundary. The fade now
-       * references --color-background, which has been unified with the
-       * actual body background-color in globals.css, so they match
-       * exactly — no more "lighter strip" seam at Hero's bottom. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-(--color-background)" />
     </section>
   );
 }

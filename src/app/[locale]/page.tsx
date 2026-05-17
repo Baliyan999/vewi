@@ -10,7 +10,7 @@ import { Features } from "@/components/marketing/features";
 import { Pricing } from "@/components/marketing/pricing";
 import { LeadForm } from "@/components/marketing/lead-form";
 import { MarketingFooter } from "@/components/marketing/footer";
-import { FloatingOrnaments, DriftingOrbs } from "@/components/marketing/parallax";
+import { GlobalBackground } from "@/components/marketing/global-background";
 
 export async function generateMetadata({
   params,
@@ -32,6 +32,7 @@ export default async function LandingPage({
 
   return (
     <>
+      <GlobalBackground />
       <MarketingHeader />
       <main className="relative">
         <Hero />
@@ -41,17 +42,7 @@ export default async function LandingPage({
         <GalleryPreview />
         <Features />
         <Pricing />
-        <section id="lead" className="relative overflow-hidden py-24 md:py-32">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, oklch(95% 0.025 70) 100%)",
-            }}
-          />
-          <DriftingOrbs variant="rose" />
-          <FloatingOrnaments count={16} hueBase={20} hueSpread={60} />
+        <section id="lead" className="relative py-24 md:py-32">
           <div className="relative">
             <LeadForm />
           </div>

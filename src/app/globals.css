@@ -150,10 +150,40 @@
   0% { box-shadow: 0 0 0 0 oklch(58% 0.09 35 / 0.45); }
   100% { box-shadow: 0 0 0 24px oklch(58% 0.09 35 / 0); }
 }
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.85); }
+  50%      { opacity: 0.85; transform: scale(1.15); }
+}
+/* Aurora orbs each get their own slow elliptical drift so the background
+ * is never frozen even at zero scroll. Different durations + directions
+ * means they never sync up into a visible mechanical pattern. */
+@keyframes orb-drift-a {
+  0%, 100% { transform: translate(0,0); }
+  33%      { transform: translate(60px, -40px); }
+  66%      { transform: translate(-30px, 50px); }
+}
+@keyframes orb-drift-b {
+  0%, 100% { transform: translate(0,0); }
+  50%      { transform: translate(-70px, 50px); }
+}
+@keyframes orb-drift-c {
+  0%, 100% { transform: translate(0,0); }
+  33%      { transform: translate(-50px, -30px); }
+  66%      { transform: translate(40px, 60px); }
+}
+@keyframes orb-drift-d {
+  0%, 100% { transform: translate(0,0); }
+  50%      { transform: translate(70px, -50px); }
+}
 
 @utility animate-float { animation: float-y 6s ease-in-out infinite; }
 @utility animate-drift { animation: drift 12s ease-in-out infinite; }
 @utility animate-pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
+@utility animate-star-twinkle { animation: star-twinkle 5s ease-in-out infinite; }
+@utility animate-orb-drift-a { animation: orb-drift-a 22s ease-in-out infinite; }
+@utility animate-orb-drift-b { animation: orb-drift-b 28s ease-in-out infinite; }
+@utility animate-orb-drift-c { animation: orb-drift-c 32s ease-in-out infinite; }
+@utility animate-orb-drift-d { animation: orb-drift-d 26s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

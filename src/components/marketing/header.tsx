@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -63,9 +64,14 @@ export function MarketingHeader() {
             href="/"
             className="group flex items-center gap-2 whitespace-nowrap font-display text-base md:text-lg"
           >
-            <span aria-hidden className="text-xl text-gradient-gold md:text-2xl">
-              ⌘
-            </span>
+            <Image
+              src="/memour-logo.png"
+              alt="Memour"
+              width={32}
+              height={32}
+              priority
+              className="h-7 w-7 md:h-8 md:w-8"
+            />
             <span>Memour</span>
           </Link>
 

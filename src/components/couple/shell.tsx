@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { Images, Palette, Settings, LogOut, Sparkles, ArrowLeft } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             href="/"
             className="group flex items-center gap-2.5 font-display text-lg md:text-xl"
           >
-            <span aria-hidden className="text-2xl text-gradient-gold">⌘</span>
+            <Image
+              src="/memour-logo.png"
+              alt="Memour"
+              width={36}
+              height={36}
+              priority
+              className="h-8 w-8 md:h-9 md:w-9"
+            />
             <span className="hidden sm:inline">Memour</span>
             <span className="ml-1 hidden text-xs uppercase tracking-[0.2em] text-(--color-muted-foreground) sm:inline">
               · кабинет

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 export function MarketingFooter() {
@@ -14,8 +15,15 @@ export function MarketingFooter() {
         }}
       />
       <div className="container-page flex flex-col items-center gap-4 text-center text-sm text-(--color-muted-foreground)">
-        <div className="font-display text-2xl text-(--color-foreground)">
-          <span className="text-gradient-gold">⌘</span> Memour
+        <div className="flex items-center gap-2.5 font-display text-2xl text-(--color-foreground)">
+          <Image
+            src="/memour-logo.png"
+            alt="Memour"
+            width={40}
+            height={40}
+            className="h-9 w-9"
+          />
+          Memour
         </div>
         <p className="max-w-md">{t("tagline")}</p>
         <p className="text-xs">© {new Date().getFullYear()} · {t("rights")}</p>

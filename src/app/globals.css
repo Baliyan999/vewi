@@ -38,19 +38,23 @@
   }
 
   html, body {
-    background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  body {
-    /* Absolutely flat warm-ivory using the same theme variable that
-     * Hero's bottom fade and the rest of the app reference, so there
-     * can never be a color mismatch between body and any section that
-     * fades to "background". */
+  /* Solid warm-ivory base color lives on html, NOT body, so that
+   * <GlobalBackground/> (z-index:-10, fixed, child of body) can paint
+   * its animated aurora/orbs/particles ON TOP of the base colour. If
+   * we leave bg-color on body the body's paint buries the negative-
+   * z-index child layer and the entire animated background turns
+   * invisible. */
+  html {
     background-color: var(--color-background);
+  }
+  body {
+    background-color: transparent;
   }
 
   /* Subtle paper grain — tactile richness without distraction */

@@ -136,25 +136,23 @@ export function GlobalBackground() {
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
       {/* ── Layer 0: Conic gradient mesh (slow rotation) ─────────── */}
-      {/* Outer carries the scroll-driven rotate; inner div carries the
-       * CSS keyframe spin so neither transform clobbers the other. */}
       {!reduce && (
         <motion.div
-          className="absolute -inset-[20%] will-change-transform"
+          className="absolute -inset-[10%] will-change-transform"
           style={{ rotate: meshRotate }}
         >
           <div
-            className="animate-conic-spin h-full w-full opacity-50"
+            className="animate-conic-spin h-full w-full opacity-80"
             style={{
               background:
                 "conic-gradient(from 0deg at 50% 50%, " +
-                "oklch(86% 0.12 30), " +   // warm rose
-                "oklch(92% 0.08 60), " +   // peach
-                "oklch(90% 0.1 90), " +    // champagne
-                "oklch(88% 0.11 45), " +   // gold
-                "oklch(85% 0.12 20), " +   // rose
-                "oklch(86% 0.12 30))",      // back to start
-              filter: "blur(100px)",
+                "oklch(82% 0.18 30), " +
+                "oklch(90% 0.14 60), " +
+                "oklch(85% 0.16 90), " +
+                "oklch(78% 0.18 45), " +
+                "oklch(82% 0.18 20), " +
+                "oklch(82% 0.18 30))",
+              filter: "blur(70px)",
             }}
           />
         </motion.div>
@@ -167,37 +165,37 @@ export function GlobalBackground() {
             style={{ y: orb1Y }}
             className="absolute -left-40 top-[-10%] h-[640px] w-[640px] will-change-transform"
           >
-            <div className="animate-orb-drift-a h-full w-full rounded-full bg-(--color-rose)/30 blur-3xl" />
+            <div className="animate-orb-drift-a h-full w-full rounded-full bg-(--color-rose)/60 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb2Y }}
             className="absolute -right-48 top-[20%] h-[760px] w-[760px] will-change-transform"
           >
-            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-champagne)/32 blur-3xl" />
+            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-champagne)/60 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb3Y }}
             className="absolute left-[20%] top-[55%] h-[560px] w-[560px] will-change-transform"
           >
-            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-accent)/28 blur-3xl" />
+            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-accent)/55 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb4Y }}
             className="absolute -right-32 bottom-[-5%] h-[680px] w-[680px] will-change-transform"
           >
-            <div className="animate-orb-drift-d h-full w-full rounded-full bg-(--color-primary)/20 blur-3xl" />
+            <div className="animate-orb-drift-d h-full w-full rounded-full bg-(--color-primary)/40 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb5Y }}
             className="absolute left-[40%] top-[10%] h-[500px] w-[500px] will-change-transform"
           >
-            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-rose)/22 blur-3xl" />
+            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-rose)/45 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb6Y }}
             className="absolute left-[-20%] top-[40%] h-[600px] w-[600px] will-change-transform"
           >
-            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-champagne)/24 blur-3xl" />
+            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-champagne)/50 blur-3xl" />
           </motion.div>
         </>
       )}
@@ -214,7 +212,7 @@ export function GlobalBackground() {
           className="absolute inset-0 will-change-transform"
           style={{
             backgroundImage:
-              "radial-gradient(circle 900px at var(--vx) var(--vy), oklch(85% 0.1 35 / 0.22), transparent 60%)",
+              "radial-gradient(circle 1100px at var(--vx) var(--vy), oklch(80% 0.15 35 / 0.45), transparent 60%)",
             ["--vx" as string]: veilX,
             ["--vy" as string]: veilY,
           }}
@@ -238,11 +236,9 @@ export function GlobalBackground() {
       {/* ── Layer 5: Cursor trail (5-dot chain) + main halo ──────── */}
       {!reduce && (
         <>
-          {/* Trail dots — each more delayed than the last */}
-          <TrailDot x={trail3X} y={trail3Y} size={120} opacity={0.06} hue={30} />
-          <TrailDot x={trail2X} y={trail2Y} size={200} opacity={0.08} hue={40} />
-          <TrailDot x={trail1X} y={trail1Y} size={340} opacity={0.10} hue={45} />
-          {/* Main halo — biggest, freshest, leads the visual */}
+          <TrailDot x={trail3X} y={trail3Y} size={220} opacity={0.18} hue={30} />
+          <TrailDot x={trail2X} y={trail2Y} size={340} opacity={0.22} hue={40} />
+          <TrailDot x={trail1X} y={trail1Y} size={480} opacity={0.28} hue={45} />
           <motion.div
             style={{
               left: haloX,
@@ -250,7 +246,7 @@ export function GlobalBackground() {
               translateX: "-50%",
               translateY: "-50%",
             }}
-            className="absolute h-[720px] w-[720px] rounded-full bg-(--color-rose)/22 blur-3xl will-change-transform"
+            className="absolute h-[780px] w-[780px] rounded-full bg-(--color-rose)/45 blur-3xl will-change-transform"
           />
         </>
       )}
@@ -299,8 +295,6 @@ function TrailDot({
 
 // ── Light rays (4 diagonal sweeping beams) ───────────────────────────
 function LightRays() {
-  // Each ray: rotation angle, animation class, delay. Diagonal beams
-  // sweep slowly across viewport on a translateY loop.
   const rays = [
     { rot: 18, className: "animate-light-ray-a", top: "-20%" },
     { rot: -22, className: "animate-light-ray-b", top: "30%" },
@@ -312,13 +306,13 @@ function LightRays() {
       {rays.map((r, i) => (
         <div
           key={i}
-          className={`pointer-events-none absolute left-[-20%] h-[3px] w-[140%] ${r.className} will-change-transform`}
+          className={`pointer-events-none absolute left-[-20%] h-[60px] w-[140%] ${r.className} will-change-transform`}
           style={{
             top: r.top,
             transform: `rotate(${r.rot}deg)`,
             background:
-              "linear-gradient(90deg, transparent 0%, oklch(95% 0.05 60 / 0.4) 50%, transparent 100%)",
-            filter: "blur(3px)",
+              "linear-gradient(90deg, transparent 0%, oklch(95% 0.08 60 / 0.55) 50%, transparent 100%)",
+            filter: "blur(20px)",
           }}
         />
       ))}

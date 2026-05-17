@@ -3,9 +3,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "QR-Фотограф", template: "%s — QR-Фотограф" },
+  title: { default: "Memour", template: "%s — Memour" },
   description:
-    "Сервис для свадеб: QR-коды на столах, гостевая камера в браузере, единый альбом для молодожёнов.",
+    "Memour — все фото со свадьбы в одном альбоме. QR-коды на столах, гостевая камера в браузере, единый архив для молодожёнов.",
   manifest: "/manifest.webmanifest",
 };
 

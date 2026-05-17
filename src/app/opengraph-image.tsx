@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "QR-Фотограф — все фото свадьбы в одном альбоме";
+export const alt = "Memour — все фото свадьбы в одном альбоме";
 
 export default function OG() {
   return new ImageResponse(
@@ -32,7 +32,7 @@ export default function OG() {
             marginBottom: 20,
           }}
         >
-          ⌗ QR-Фотограф
+          ⌗ Memour
         </div>
         <div
           style={{

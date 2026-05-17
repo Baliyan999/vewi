@@ -1,7 +1,7 @@
 {
-  "name": "QR-Фотограф",
-  "short_name": "QR-Фото",
-  "description": "Гостевая камера на свадьбе — сканируй QR и присылай фото",
+  "name": "Memour",
+  "short_name": "Memour",
+  "description": "Memour — все фото свадьбы от ваших гостей. Сканируй QR и присылай фото.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

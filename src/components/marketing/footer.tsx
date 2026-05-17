@@ -15,7 +15,7 @@ export function MarketingFooter() {
       />
       <div className="container-page flex flex-col items-center gap-4 text-center text-sm text-(--color-muted-foreground)">
         <div className="font-display text-2xl text-(--color-foreground)">
-          <span className="text-gradient-gold">⌘</span> QR-Фотограф
+          <span className="text-gradient-gold">⌘</span> Memour
         </div>
         <p className="max-w-md">{t("tagline")}</p>
         <p className="text-xs">© {new Date().getFullYear()} · {t("rights")}</p>

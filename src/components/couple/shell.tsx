@@ -59,7 +59,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             className="group flex items-center gap-2.5 font-display text-lg md:text-xl"
           >
             <span aria-hidden className="text-2xl text-gradient-gold">⌘</span>
-            <span className="hidden sm:inline">QR-Фотограф</span>
+            <span className="hidden sm:inline">Memour</span>
             <span className="ml-1 hidden text-xs uppercase tracking-[0.2em] text-(--color-muted-foreground) sm:inline">
               · кабинет
             </span>

@@ -66,7 +66,7 @@ export function MarketingHeader() {
             <span aria-hidden className="text-xl text-gradient-gold md:text-2xl">
               ⌘
             </span>
-            <span>QR-Фотограф</span>
+            <span>Memour</span>
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm md:flex">

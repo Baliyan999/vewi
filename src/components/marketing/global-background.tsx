@@ -12,49 +12,47 @@ import {
 } from "motion/react";
 
 /**
- * GlobalBackground — a single fixed-position canvas that lives behind every
- * section of the marketing page. Because it sits outside the document flow
- * (position: fixed) it never participates in section layout, so it can be
- * heavily animated without ever creating a per-section seam or transition.
+ * GlobalBackground — single fixed-position canvas behind every section.
  *
  * Layers (back-to-front):
  *
- *   1. Aurora orbs (4×)
- *      Large soft blur orbs in warm hues — rose, champagne, accent, gold.
- *      Each drifts on its own slow CSS keyframe loop (18-32s) so they
- *      breathe even at rest. Scroll-Y also nudges them, different amounts
- *      and directions per orb, so the page feels alive during scroll.
+ *   0. Conic gradient mesh — slowly rotating warm color wheel, sits at
+ *      the very back. The whole page picks up gentle "premium AI"
+ *      iridescence as it rotates over ~80 seconds.
  *
- *   2. Cursor halo
- *      A 600px soft rose halo that spring-follows the pointer page-wide.
- *      Low stiffness so it drifts behind the cursor rather than snapping —
- *      reads as a gentle warmth following the user's attention. Single
- *      element, not per-section, so no transitions.
+ *   1. Aurora orbs (6×) — large soft blur orbs in warm hues, each
+ *      carries (a) a scroll-driven Y translate and (b) its own CSS
+ *      keyframe elliptical drift. Doubled wrapper so both transforms
+ *      coexist.
  *
- *   3. Parallax stars (35×)
- *      Tiny twinkling dots in two depth layers (depth 0.4 + 0.8). Each
- *      layer drifts horizontally based on mouse X * depth, so the
- *      shallower layer moves less than the deeper one (parallax). Each
- *      star also pulses opacity via random-delayed CSS animation.
+ *   2. Light rays (4×) — thin diagonal beams that sweep across the
+ *      viewport on a 14-22s cycle, like sunlight through clouds.
  *
- *   4. Scroll-driven hue veil
- *      A single radial-gradient that slowly migrates across the viewport
- *      as the user scrolls: starts top-left rose, ends bottom-right
- *      champagne. Adds a subtle "journey through the day" feel without
- *      ever creating a hard transition line.
+ *   3. Drifting particles (24×) — small specs that float upward across
+ *      the page on a slow continuous CSS loop. Different speeds and
+ *      delays so they never align.
  *
- * All layers are pointer-events:none and z-index:-10, behind everything.
- * Reduced-motion users see a static fallback.
+ *   4. Twinkling stars (35×, two depth layers) — pulse opacity/scale
+ *      and parallax with mouse X/Y at different depths.
+ *
+ *   5. Cursor halo + 5-dot trail — large rose halo follows the pointer
+ *      via spring; a chain of smaller dots trails behind at progressive
+ *      lag, like comet exhaust.
+ *
+ *   6. Scroll-driven hue veil — radial-gradient whose centre migrates
+ *      top-left → bottom-right as the user scrolls.
+ *
+ *   7. Vignette — radial darkening at the corners for cinematic depth.
+ *
+ * All layers are pointer-events:none and z-index:-10; everything sits
+ * behind page content. useReducedMotion disables motion entirely while
+ * keeping the static colour wash.
  */
 export function GlobalBackground() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  // Hydration-safe gate. Motion-value transforms here read
-  // window.innerWidth / innerHeight, which only exist on the client. On
-  // the server they default to 0, but on the client's first paint they
-  // jump to the real viewport size, producing a `transform` mismatch
-  // versus the SSR snapshot. Rendering the animated layers only AFTER
-  // the first effect runs sidesteps the hydration warning entirely.
+
+  // Hydration gate (see commit c8c835f for rationale).
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -63,17 +61,20 @@ export function GlobalBackground() {
   // ── Mouse tracking ──────────────────────────────────────────────────
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  // Two springs at different stiffness — the cursor halo lags more than
-  // the parallax stars, so they don't look like they're glued together.
+  // Multiple springs at different stiffnesses for layered lag effects.
   const haloX = useSpring(mx, { stiffness: 40, damping: 22, mass: 1.2 });
   const haloY = useSpring(my, { stiffness: 40, damping: 22, mass: 1.2 });
+  const trail1X = useSpring(mx, { stiffness: 80, damping: 25, mass: 1 });
+  const trail1Y = useSpring(my, { stiffness: 80, damping: 25, mass: 1 });
+  const trail2X = useSpring(mx, { stiffness: 50, damping: 22, mass: 1.1 });
+  const trail2Y = useSpring(my, { stiffness: 50, damping: 22, mass: 1.1 });
+  const trail3X = useSpring(mx, { stiffness: 30, damping: 20, mass: 1.3 });
+  const trail3Y = useSpring(my, { stiffness: 30, damping: 20, mass: 1.3 });
   const starsX = useSpring(mx, { stiffness: 90, damping: 28, mass: 0.8 });
   const starsY = useSpring(my, { stiffness: 90, damping: 28, mass: 0.8 });
 
   useEffect(() => {
     if (reduce) return;
-    // Initial position at viewport centre so the halo isn't stuck in
-    // the top-left corner before the first mouse event.
     mx.set(window.innerWidth / 2);
     my.set(window.innerHeight / 2);
     function onMove(e: PointerEvent) {
@@ -85,22 +86,22 @@ export function GlobalBackground() {
   }, [mx, my, reduce]);
 
   // ── Scroll-driven motion ───────────────────────────────────────────
-  // Each orb drifts a different amount as scroll progresses; combined
-  // with the CSS-keyframe orbit each gets, motion never feels mechanical.
   const orb1Y = useTransform(scrollYProgress, [0, 1], [0, 320]);
   const orb2Y = useTransform(scrollYProgress, [0, 1], [0, -240]);
   const orb3Y = useTransform(scrollYProgress, [0, 1], [0, 180]);
   const orb4Y = useTransform(scrollYProgress, [0, 1], [0, -300]);
+  const orb5Y = useTransform(scrollYProgress, [0, 1], [0, 260]);
+  const orb6Y = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
-  // Hue veil position migrates from top-left (rose tinted) at progress 0
-  // to bottom-right (champagne tinted) at progress 1.
+  // Conic mesh rotation also slowly drifts with scroll, on top of the
+  // CSS keyframe rotation.
+  const meshRotate = useTransform(scrollYProgress, [0, 1], [0, 30]);
+
+  // Hue veil centre migrates top-left → bottom-right with scroll.
   const veilX = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const veilY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
-  // Star-layer mouse parallax — derive each layer's offset from the
-  // spring-smoothed mouse position, scaled by the layer's depth.
-  // Subtract viewport-centre offset so the rest position is (0,0)
-  // rather than (vw/2, vh/2).
+  // Star parallax (depth-scaled cursor offset).
   const starsLayer1X = useTransform(
     starsX,
     (x) => (x - (typeof window !== "undefined" ? window.innerWidth / 2 : 0)) * -0.018,
@@ -118,10 +119,8 @@ export function GlobalBackground() {
     (y) => (y - (typeof window !== "undefined" ? window.innerHeight / 2 : 0)) * -0.04,
   );
 
-  // Before the first client effect runs, render an empty (still-fixed)
-  // wrapper. The server and the first client render now produce the
-  // identical empty subtree, so hydration matches; the animated layers
-  // mount on the next tick once the client has measured the window.
+  // Render an empty wrapper before mount to keep SSR / first client paint
+  // identical (no hydration mismatch from window.innerWidth reads).
   if (!mounted) {
     return (
       <div
@@ -136,67 +135,93 @@ export function GlobalBackground() {
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      {/* ── Layer 1: Aurora orbs ─────────────────────────────────── */}
-      {/* Wrapper motion.div carries the scroll-driven Y translate; the
-       * inner div carries the CSS-keyframe elliptical drift. Stacking
-       * them keeps both transforms alive — Framer Motion's `y` would
-       * otherwise overwrite the CSS animation's `transform`. */}
+      {/* ── Layer 0: Conic gradient mesh (slow rotation) ─────────── */}
+      {/* Outer carries the scroll-driven rotate; inner div carries the
+       * CSS keyframe spin so neither transform clobbers the other. */}
+      {!reduce && (
+        <motion.div
+          className="absolute -inset-[20%] will-change-transform"
+          style={{ rotate: meshRotate }}
+        >
+          <div
+            className="animate-conic-spin h-full w-full opacity-50"
+            style={{
+              background:
+                "conic-gradient(from 0deg at 50% 50%, " +
+                "oklch(86% 0.12 30), " +   // warm rose
+                "oklch(92% 0.08 60), " +   // peach
+                "oklch(90% 0.1 90), " +    // champagne
+                "oklch(88% 0.11 45), " +   // gold
+                "oklch(85% 0.12 20), " +   // rose
+                "oklch(86% 0.12 30))",      // back to start
+              filter: "blur(100px)",
+            }}
+          />
+        </motion.div>
+      )}
+
+      {/* ── Layer 1: Aurora orbs (×6) ─────────────────────────────── */}
       {!reduce && (
         <>
           <motion.div
             style={{ y: orb1Y }}
             className="absolute -left-40 top-[-10%] h-[640px] w-[640px] will-change-transform"
           >
-            <div className="animate-orb-drift-a h-full w-full rounded-full bg-(--color-rose)/25 blur-3xl" />
+            <div className="animate-orb-drift-a h-full w-full rounded-full bg-(--color-rose)/30 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb2Y }}
             className="absolute -right-48 top-[20%] h-[760px] w-[760px] will-change-transform"
           >
-            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-champagne)/30 blur-3xl" />
+            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-champagne)/32 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb3Y }}
             className="absolute left-[20%] top-[55%] h-[560px] w-[560px] will-change-transform"
           >
-            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-accent)/25 blur-3xl" />
+            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-accent)/28 blur-3xl" />
           </motion.div>
           <motion.div
             style={{ y: orb4Y }}
             className="absolute -right-32 bottom-[-5%] h-[680px] w-[680px] will-change-transform"
           >
-            <div className="animate-orb-drift-d h-full w-full rounded-full bg-(--color-primary)/18 blur-3xl" />
+            <div className="animate-orb-drift-d h-full w-full rounded-full bg-(--color-primary)/20 blur-3xl" />
+          </motion.div>
+          <motion.div
+            style={{ y: orb5Y }}
+            className="absolute left-[40%] top-[10%] h-[500px] w-[500px] will-change-transform"
+          >
+            <div className="animate-orb-drift-b h-full w-full rounded-full bg-(--color-rose)/22 blur-3xl" />
+          </motion.div>
+          <motion.div
+            style={{ y: orb6Y }}
+            className="absolute left-[-20%] top-[40%] h-[600px] w-[600px] will-change-transform"
+          >
+            <div className="animate-orb-drift-c h-full w-full rounded-full bg-(--color-champagne)/24 blur-3xl" />
           </motion.div>
         </>
       )}
 
-      {/* ── Layer 2: Cursor halo ─────────────────────────────────── */}
-      {!reduce && (
-        <motion.div
-          style={{
-            left: haloX,
-            top: haloY,
-            translateX: "-50%",
-            translateY: "-50%",
-          }}
-          className="absolute h-[720px] w-[720px] rounded-full bg-(--color-rose)/20 blur-3xl will-change-transform"
-        />
-      )}
+      {/* ── Layer 2: Light rays (×4) ─────────────────────────────── */}
+      {!reduce && <LightRays />}
 
-      {/* ── Layer 4: Scroll-driven hue veil ──────────────────────── */}
+      {/* ── Layer 3: Drifting particles ──────────────────────────── */}
+      {!reduce && <DriftingParticles />}
+
+      {/* ── Layer 6: Scroll-driven hue veil ──────────────────────── */}
       {!reduce && (
         <motion.div
           className="absolute inset-0 will-change-transform"
           style={{
             backgroundImage:
-              "radial-gradient(circle 800px at var(--vx) var(--vy), oklch(85% 0.08 35 / 0.18), transparent 60%)",
+              "radial-gradient(circle 900px at var(--vx) var(--vy), oklch(85% 0.1 35 / 0.22), transparent 60%)",
             ["--vx" as string]: veilX,
             ["--vy" as string]: veilY,
           }}
         />
       )}
 
-      {/* ── Layer 3: Parallax stars ──────────────────────────────── */}
+      {/* ── Layer 4: Parallax stars ──────────────────────────────── */}
       <StarLayer
         offsetX={reduce ? null : starsLayer1X}
         offsetY={reduce ? null : starsLayer1Y}
@@ -209,13 +234,151 @@ export function GlobalBackground() {
         positions={STAR_POSITIONS_DEEP}
         hueBase={55}
       />
+
+      {/* ── Layer 5: Cursor trail (5-dot chain) + main halo ──────── */}
+      {!reduce && (
+        <>
+          {/* Trail dots — each more delayed than the last */}
+          <TrailDot x={trail3X} y={trail3Y} size={120} opacity={0.06} hue={30} />
+          <TrailDot x={trail2X} y={trail2Y} size={200} opacity={0.08} hue={40} />
+          <TrailDot x={trail1X} y={trail1Y} size={340} opacity={0.10} hue={45} />
+          {/* Main halo — biggest, freshest, leads the visual */}
+          <motion.div
+            style={{
+              left: haloX,
+              top: haloY,
+              translateX: "-50%",
+              translateY: "-50%",
+            }}
+            className="absolute h-[720px] w-[720px] rounded-full bg-(--color-rose)/22 blur-3xl will-change-transform"
+          />
+        </>
+      )}
+
+      {/* ── Layer 7: Vignette ────────────────────────────────────── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 50%, oklch(60% 0.04 35 / 0.08) 100%)",
+        }}
+      />
     </div>
   );
 }
 
+// ── Cursor trail dot ─────────────────────────────────────────────────
+function TrailDot({
+  x,
+  y,
+  size,
+  opacity,
+  hue,
+}: {
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+  size: number;
+  opacity: number;
+  hue: number;
+}) {
+  return (
+    <motion.div
+      style={{
+        left: x,
+        top: y,
+        translateX: "-50%",
+        translateY: "-50%",
+        width: size,
+        height: size,
+        background: `radial-gradient(circle, oklch(80% 0.1 ${hue} / ${opacity * 4}), transparent 70%)`,
+      }}
+      className="absolute rounded-full blur-2xl will-change-transform"
+    />
+  );
+}
+
+// ── Light rays (4 diagonal sweeping beams) ───────────────────────────
+function LightRays() {
+  // Each ray: rotation angle, animation class, delay. Diagonal beams
+  // sweep slowly across viewport on a translateY loop.
+  const rays = [
+    { rot: 18, className: "animate-light-ray-a", top: "-20%" },
+    { rot: -22, className: "animate-light-ray-b", top: "30%" },
+    { rot: 12, className: "animate-light-ray-c", top: "55%" },
+    { rot: -16, className: "animate-light-ray-d", top: "80%" },
+  ];
+  return (
+    <>
+      {rays.map((r, i) => (
+        <div
+          key={i}
+          className={`pointer-events-none absolute left-[-20%] h-[3px] w-[140%] ${r.className} will-change-transform`}
+          style={{
+            top: r.top,
+            transform: `rotate(${r.rot}deg)`,
+            background:
+              "linear-gradient(90deg, transparent 0%, oklch(95% 0.05 60 / 0.4) 50%, transparent 100%)",
+            filter: "blur(3px)",
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+// ── Drifting particles (slow upward float) ───────────────────────────
+const PARTICLE_POSITIONS = [
+  { x: 5, size: 3, duration: 24, delay: 0 },
+  { x: 12, size: 2, duration: 32, delay: 4 },
+  { x: 20, size: 4, duration: 28, delay: 9 },
+  { x: 28, size: 2, duration: 36, delay: 14 },
+  { x: 35, size: 3, duration: 22, delay: 2 },
+  { x: 42, size: 5, duration: 30, delay: 11 },
+  { x: 48, size: 2, duration: 26, delay: 18 },
+  { x: 54, size: 3, duration: 34, delay: 5 },
+  { x: 61, size: 4, duration: 28, delay: 16 },
+  { x: 68, size: 2, duration: 22, delay: 8 },
+  { x: 74, size: 3, duration: 32, delay: 3 },
+  { x: 80, size: 5, duration: 26, delay: 13 },
+  { x: 86, size: 2, duration: 30, delay: 6 },
+  { x: 92, size: 3, duration: 24, delay: 19 },
+  { x: 16, size: 2, duration: 38, delay: 21 },
+  { x: 38, size: 4, duration: 28, delay: 7 },
+  { x: 58, size: 2, duration: 34, delay: 15 },
+  { x: 78, size: 4, duration: 26, delay: 1 },
+  { x: 8, size: 3, duration: 36, delay: 17 },
+  { x: 32, size: 2, duration: 30, delay: 10 },
+  { x: 50, size: 4, duration: 22, delay: 12 },
+  { x: 70, size: 3, duration: 32, delay: 20 },
+  { x: 88, size: 4, duration: 28, delay: 6 },
+  { x: 24, size: 5, duration: 34, delay: 23 },
+];
+
+function DriftingParticles() {
+  return (
+    <>
+      {PARTICLE_POSITIONS.map((p, i) => (
+        <span
+          key={i}
+          className="animate-particle-rise pointer-events-none absolute rounded-full will-change-transform"
+          style={{
+            left: `${p.x}%`,
+            bottom: "-20px",
+            width: p.size,
+            height: p.size,
+            background:
+              "radial-gradient(circle, oklch(92% 0.06 60), oklch(78% 0.1 40) 70%, transparent 100%)",
+            boxShadow: `0 0 ${p.size * 4}px oklch(82% 0.08 45 / 0.6)`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 // ── Star positions (deterministic so SSR / hydration matches) ────────
-// Two layers at different depths. Each star: x/y in viewport %, size px,
-// and a delay (0–6s) used to stagger the twinkle animation phase.
 type StarPos = {
   x: number;
   y: number;

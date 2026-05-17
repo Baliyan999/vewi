@@ -175,6 +175,45 @@
   0%, 100% { transform: translate(0,0); }
   50%      { transform: translate(70px, -50px); }
 }
+/* Premium-feel ambient layers driven by these keyframes:
+ *   conic-spin   — slow 80s color-wheel rotation behind everything
+ *   light-ray-X  — diagonal sweeping highlight rays
+ *   particle-rise — fireflies floating upward across viewport
+ */
+@keyframes conic-spin {
+  from { rotate: 0deg; }
+  to   { rotate: 360deg; }
+}
+@keyframes light-ray-a {
+  0%, 100% { transform: rotate(18deg) translateX(-20%); opacity: 0; }
+  10%       { opacity: 0.7; }
+  90%       { opacity: 0.7; }
+  50%       { transform: rotate(18deg) translateX(40%); }
+}
+@keyframes light-ray-b {
+  0%, 100% { transform: rotate(-22deg) translateX(40%); opacity: 0; }
+  10%       { opacity: 0.6; }
+  90%       { opacity: 0.6; }
+  50%       { transform: rotate(-22deg) translateX(-30%); }
+}
+@keyframes light-ray-c {
+  0%, 100% { transform: rotate(12deg) translateX(-30%); opacity: 0; }
+  10%       { opacity: 0.7; }
+  90%       { opacity: 0.7; }
+  50%       { transform: rotate(12deg) translateX(30%); }
+}
+@keyframes light-ray-d {
+  0%, 100% { transform: rotate(-16deg) translateX(30%); opacity: 0; }
+  10%       { opacity: 0.5; }
+  90%       { opacity: 0.5; }
+  50%       { transform: rotate(-16deg) translateX(-40%); }
+}
+@keyframes particle-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
+}
 
 @utility animate-float { animation: float-y 6s ease-in-out infinite; }
 @utility animate-drift { animation: drift 12s ease-in-out infinite; }
@@ -184,6 +223,12 @@
 @utility animate-orb-drift-b { animation: orb-drift-b 28s ease-in-out infinite; }
 @utility animate-orb-drift-c { animation: orb-drift-c 32s ease-in-out infinite; }
 @utility animate-orb-drift-d { animation: orb-drift-d 26s ease-in-out infinite; }
+@utility animate-conic-spin { animation: conic-spin 80s linear infinite; }
+@utility animate-light-ray-a { animation: light-ray-a 18s ease-in-out infinite; }
+@utility animate-light-ray-b { animation: light-ray-b 22s ease-in-out infinite; }
+@utility animate-light-ray-c { animation: light-ray-c 16s ease-in-out infinite; }
+@utility animate-light-ray-d { animation: light-ray-d 20s ease-in-out infinite; }
+@utility animate-particle-rise { animation: particle-rise linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -21,16 +21,17 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      // Section padding uses viewport-height-aware clamp so that on
-      // shorter 16:10 displays (≈900px tall, like MacBook 1440×900)
-      // the chrome shrinks down and the three pricing cards fit
-      // inside one screen with the title still visible above them.
-      // On 16:9 displays (≥1080) the padding climbs back up to its
-      // generous spacious feel.
-      className="relative overflow-hidden"
+      // Section padding uses viewport-height-aware clamp so that when
+      // the user clicks the "Тарифы" nav link on a 16:10 display
+      // (~900px tall), the entire section (title + 4 cards + CTAs)
+      // fits inside one screen below the sticky header. On 16:9
+      // displays (≥1080) the padding climbs back up to feel spacious.
+      // The 5vh lower bound trims ~32px more than the previous 7vh
+      // so cards don't get clipped at the bottom on shorter viewports.
+      className="relative overflow-hidden scroll-mt-20"
       style={{
-        paddingTop: "clamp(2.5rem, 7vh, 8rem)",
-        paddingBottom: "clamp(2.5rem, 7vh, 8rem)",
+        paddingTop: "clamp(1.5rem, 5vh, 6rem)",
+        paddingBottom: "clamp(1.5rem, 5vh, 6rem)",
       }}
     >
       <DriftingOrbs variant="champagne" />
@@ -51,7 +52,7 @@ export function Pricing() {
         </Reveal>
 
         <Stagger
-          className="mt-8 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-12 md:gap-6 lg:grid-cols-4"
+          className="mt-6 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-10 md:gap-6 lg:grid-cols-4"
           step={0.1}
         >
           {TIERS.map((tier) => {
@@ -171,7 +172,7 @@ export function Pricing() {
 
                     <div
                       className={cn(
-                        "my-4 h-px md:my-6",
+                        "my-3 h-px md:my-5",
                         isLuxe ? "bg-white/15" : "bg-(--color-border)",
                       )}
                     />

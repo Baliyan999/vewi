@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -49,6 +49,16 @@ import {
 export function GlobalBackground() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
+  // Hydration-safe gate. Motion-value transforms here read
+  // window.innerWidth / innerHeight, which only exist on the client. On
+  // the server they default to 0, but on the client's first paint they
+  // jump to the real viewport size, producing a `transform` mismatch
+  // versus the SSR snapshot. Rendering the animated layers only AFTER
+  // the first effect runs sidesteps the hydration warning entirely.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ── Mouse tracking ──────────────────────────────────────────────────
   const mx = useMotionValue(0);
@@ -107,6 +117,19 @@ export function GlobalBackground() {
     starsY,
     (y) => (y - (typeof window !== "undefined" ? window.innerHeight / 2 : 0)) * -0.04,
   );
+
+  // Before the first client effect runs, render an empty (still-fixed)
+  // wrapper. The server and the first client render now produce the
+  // identical empty subtree, so hydration matches; the animated layers
+  // mount on the next tick once the client has measured the window.
+  if (!mounted) {
+    return (
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      />
+    );
+  }
 
   return (
     <div

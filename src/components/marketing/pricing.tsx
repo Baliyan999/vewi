@@ -8,11 +8,16 @@ import { Reveal, Stagger, StaggerItem } from "./reveal";
 import { FloatingOrnaments, ParallaxY } from "./parallax";
 import { cn } from "@/lib/utils";
 
+// Each tier sits visually higher than the previous one — Basic at the
+// baseline, Luxury at the top — forming a staircase that telegraphs
+// "bigger tier = bigger card". liftPx lifts the card via translateY,
+// scale subtly grows the card size, padScale bumps internal padding
+// so the higher tiers don't just sit higher, they're physically larger.
 const TIERS = [
-  { key: "basic", featureCount: 5, drift: 0.04 },
-  { key: "pro", featureCount: 6, highlighted: true, drift: -0.05 },
-  { key: "premium", featureCount: 6, drift: 0.04 },
-  { key: "luxury", featureCount: 7, drift: -0.04, luxe: true },
+  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 0,  scale: 0.94, padScale: 0.85 },
+  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 24, scale: 0.98, padScale: 0.95 },
+  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 48, scale: 1.02, padScale: 1.05 },
+  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 72, scale: 1.08, padScale: 1.15 },
 ] as const;
 
 export function Pricing() {
@@ -51,7 +56,12 @@ export function Pricing() {
         </Reveal>
 
         <Stagger
-          className="mt-6 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-10 md:gap-6 lg:grid-cols-4"
+          // items-end on lg+ bottom-aligns the cards so the per-tier
+          // translateY lift creates a clean staircase silhouette: Basic
+          // at the floor, each successive card stepping up. On smaller
+          // viewports (sm/md) we keep items-start because the
+          // 2-column grid doesn't have horizontal room for a staircase.
+          className="mt-6 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-10 md:gap-6 lg:grid-cols-4 lg:items-end lg:gap-3"
           step={0.1}
         >
           {TIERS.map((tier) => {
@@ -60,6 +70,19 @@ export function Pricing() {
             return (
               <StaggerItem key={tier.key}>
                 <ParallaxY strength={tier.drift}>
+                  {/* Staircase wrapper — translateY pushes each card
+                      progressively higher (Basic=0, Luxury=-72px), and
+                      scale grows slightly toward Luxury so higher tiers
+                      read as both bigger and elevated. transform-origin
+                      pinned to bottom-center so they "step up" from a
+                      shared floor. */}
+                  <div
+                    className="origin-bottom transition-transform"
+                    style={{
+                      transform: `translateY(${-tier.liftPx}px) scale(${tier.scale})`,
+                      transformOrigin: "bottom center",
+                    }}
+                  >
                   <motion.div
                     whileHover={isHighlight || isLuxe ? { y: -6 } : { y: -3 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
@@ -222,6 +245,7 @@ export function Pricing() {
                       {t("ctaSelect")}
                     </a>
                   </motion.div>
+                  </div>
                 </ParallaxY>
               </StaggerItem>
             );

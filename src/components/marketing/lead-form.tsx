@@ -22,7 +22,7 @@ export function LeadForm() {
     const data: LeadInput = {
       name: String(fd.get("name") ?? ""),
       phone: String(fd.get("phone") ?? ""),
-      wedding_date: parseLocaleDate(fd.get("wedding_date") as string | null),
+      wedding_date: (fd.get("wedding_date") as string) || null,
       guests_estimate: fd.get("guests")
         ? Number(fd.get("guests"))
         : null,
@@ -113,21 +113,15 @@ export function LeadForm() {
                   <label htmlFor="wedding_date" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
                     {t("weddingDate")}
                   </label>
-                  {/* Plain text input — native <input type="date"> shows
-                      its own browser-locale strings ("дд.мм.гггг" in
-                      RU Chrome) the moment it gets focus, regardless
-                      of page lang. Sticking to text + a localised
-                      placeholder + a regex pattern is the only way to
-                      keep the whole control on our locale. The
-                      pattern allows D.M.YYYY or DD.MM.YYYY. */}
+                  {/* Native date picker. The placeholder template
+                      ("дд.мм.гггг" / "mm/dd/yyyy" / etc.) shows the
+                      browser's UI locale, not the page locale —
+                      that's a browser-spec limitation we accept.
+                      User gets a real calendar on click. */}
                   <Input
                     id="wedding_date"
                     name="wedding_date"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder={t("dateFormat")}
-                    pattern="^\d{1,2}\.\d{1,2}\.\d{4}$"
-                    title={t("dateFormat")}
+                    type="date"
                     className="bg-white"
                   />
                 </div>
@@ -159,20 +153,6 @@ export function LeadForm() {
       </div>
     </Reveal>
   );
-}
-
-/**
- * Convert the user-typed "ДД.ММ.ГГГГ" (or "Д.М.ГГГГ") date string into
- * the ISO-8601 YYYY-MM-DD format the back-end expects. Returns null on
- * empty or malformed input — the back-end already accepts null for an
- * unknown wedding date, so an unparseable value just falls through.
- */
-function parseLocaleDate(raw: string | null): string | null {
-  if (!raw) return null;
-  const m = raw.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-  if (!m) return null;
-  const [, d, mo, y] = m;
-  return `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
 /**

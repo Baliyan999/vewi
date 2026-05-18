@@ -35,6 +35,62 @@
     scroll-behavior: smooth;
     /* Anchor jumps (#features, #pricing) need to clear the sticky header. */
     scroll-padding-top: 5.5rem;
+    /* Firefox custom scrollbar — thin rose-gold thumb on transparent
+     * track, falls back to default colors if the user's OS overrides
+     * scrollbar styling. */
+    scrollbar-width: thin;
+    scrollbar-color: oklch(68% 0.1 35 / 0.55) transparent;
+  }
+
+  /* WebKit / Blink (Chrome, Safari, Edge, Brave, Opera) custom
+   * scrollbar — matched to the brand palette. The thumb uses
+   * background-clip:content-box with a 3px transparent border so
+   * it visually "floats" inside its track with a soft padding,
+   * which reads as much more elegant than a chunky edge-to-edge
+   * bar. */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: oklch(68% 0.1 35 / 0.5);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    transition: background-color 200ms ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(58% 0.12 35 / 0.8);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background-color: oklch(52% 0.14 35 / 0.9);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Slimmer variant for inner scrollable areas (e.g. flipped pricing
+   * card back, modal lists). Apply via .scrollbar-slim utility on the
+   * scrollable element. */
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background-color: oklch(70% 0.08 35 / 0.45);
+    border: 1px solid transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(60% 0.12 35 / 0.75);
+  }
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(70% 0.08 35 / 0.45) transparent;
   }
 
   html, body {

@@ -367,8 +367,9 @@ function TierCard({ tier }: { tier: Tier }) {
           />
 
           {/* Scrollable detail list — preserves the staircase height by
-              keeping the scrollbar inside the card. */}
-          <ul className="flex flex-1 flex-col gap-3.5 overflow-y-auto pr-1 text-sm md:gap-4">
+              keeping the scrollbar inside the card. The slim brand-
+              styled scrollbar replaces the system default. */}
+          <ul className="scrollbar-slim flex flex-1 flex-col gap-3.5 overflow-y-auto pr-1 text-sm md:gap-4">
             {Array.from({ length: tier.featureCount }, (_, j) => j + 1).map(
               (k) => (
                 <li key={k} className="flex flex-col gap-1">

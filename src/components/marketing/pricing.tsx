@@ -195,19 +195,22 @@ function TierCard({ tier }: { tier: Tier }) {
             />
           )}
 
-          {/* Info button — flips to back */}
+          {/* Info button — flips to back. Pill shape with icon + text
+              label so it's obvious what it does (icon alone wasn't
+              self-explanatory for less tech-savvy visitors). */}
           <button
             type="button"
             onClick={() => setFlipped(true)}
-            aria-label="Подробнее о тарифе"
+            aria-label={t("detailsTitle")}
             className={cn(
-              "absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full transition-colors",
+              "absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors",
               isLuxe
                 ? "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
                 : "bg-(--color-background)/70 text-(--color-muted-foreground) hover:bg-(--color-background) hover:text-(--color-primary)",
             )}
           >
-            <Info className="h-4 w-4" strokeWidth={1.8} />
+            <Info className="h-3.5 w-3.5" strokeWidth={1.8} />
+            {t("detailsCta")}
           </button>
 
           <h3 className="font-display text-xl sm:text-2xl md:text-3xl">

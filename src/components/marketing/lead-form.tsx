@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "./date-picker";
 import { Reveal } from "./reveal";
 import { submitLead, type LeadInput } from "@/app/_actions/lead";
 
@@ -113,17 +114,13 @@ export function LeadForm() {
                   <label htmlFor="wedding_date" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
                     {t("weddingDate")}
                   </label>
-                  {/* Native date picker. The placeholder template
-                      ("дд.мм.гггг" / "mm/dd/yyyy" / etc.) shows the
-                      browser's UI locale, not the page locale —
-                      that's a browser-spec limitation we accept.
-                      User gets a real calendar on click. */}
-                  <Input
-                    id="wedding_date"
-                    name="wedding_date"
-                    type="date"
-                    className="bg-white"
-                  />
+                  {/* Custom locale-aware date picker — native
+                      <input type="date"> is locked to the browser UI
+                      locale ("январь" in RU Chrome regardless of page
+                      lang). The DatePicker wrapper uses
+                      react-day-picker + date-fns/locale (ru | uz) so
+                      the popup respects the active app locale. */}
+                  <DatePicker id="wedding_date" name="wedding_date" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="guests" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">

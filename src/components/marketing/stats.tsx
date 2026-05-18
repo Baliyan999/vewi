@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   motion,
   useInView,
@@ -15,14 +16,19 @@ import { MouseTilt, FloatingOrnaments, ParallaxY } from "./parallax";
  * Honest product-promise numbers (NOT adoption metrics — we just launched).
  * Each value reflects something real the couple receives from the service,
  * mirroring the tariff lines further down the page.
+ *
+ * Labels are pulled from i18n (statsPromo.label1/2/3) and prefix is also
+ * localised — "до" in ru, blank in uz where the limit suffix lives in
+ * the label itself.
  */
-const ITEMS = [
-  { prefix: "до ", value: 30, suffix: "", label: "кадров от каждого гостя" },
-  { prefix: "до ", value: 15, suffix: "", label: "секунд на видео-привет" },
-  { prefix: "до ", value: 6, suffix: "", label: "месяцев храним архив" },
+const ITEM_VALUES = [
+  { value: 30, suffix: "", labelKey: "label1" as const },
+  { value: 15, suffix: "", labelKey: "label2" as const },
+  { value: 6, suffix: "", labelKey: "label3" as const },
 ] as const;
 
 export function Stats() {
+  const t = useTranslations("statsPromo");
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
 
@@ -92,7 +98,7 @@ export function Stats() {
         >
           <MouseTilt intensity={5}>
             <div
-              className="surface-card relative overflow-hidden rounded-(--radius-xl) p-10 md:p-14"
+              className="surface-card relative overflow-hidden rounded-(--radius-xl) p-7 sm:p-10 md:p-14"
               style={{ transform: "translateZ(0)" }}
             >
               <ParallaxY strength={0.18}>
@@ -109,17 +115,17 @@ export function Stats() {
               </ParallaxY>
 
               <div
-                className="relative grid gap-10 md:grid-cols-3 md:items-stretch"
+                className="relative grid gap-8 sm:gap-10 md:grid-cols-3 md:items-stretch"
                 style={{ transform: "translateZ(20px)" }}
               >
-                {ITEMS.map((it) => (
+                {ITEM_VALUES.map((it) => (
                   <div
-                    key={it.label}
+                    key={it.labelKey}
                     className="flex h-full flex-col text-center md:text-left"
                   >
-                    <Counter prefix={it.prefix} to={it.value} suffix={it.suffix} />
+                    <Counter prefix={t("prefix")} to={it.value} suffix={it.suffix} />
                     <p className="mt-auto pt-4 text-sm text-(--color-muted-foreground)">
-                      {it.label}
+                      {t(it.labelKey)}
                     </p>
                   </div>
                 ))}
@@ -163,7 +169,7 @@ function Counter({
   return (
     <motion.span
       ref={ref}
-      className="block font-display text-5xl md:text-6xl text-gradient-gold"
+      className="block font-display text-gradient-gold text-4xl sm:text-5xl md:text-6xl"
     >
       {prefix}
       {n.toLocaleString("ru-RU")}

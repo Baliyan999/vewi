@@ -21,6 +21,23 @@
     "bullet3": "Видео-поздравления и голосовые сообщения",
     "bullet4": "Живой слайдшоу на проекторе в зале"
   },
+  "statsPromo": {
+    "prefix": "до ",
+    "label1": "кадров от каждого гостя",
+    "label2": "секунд на видео-привет",
+    "label3": "месяцев храним архив"
+  },
+  "stickyHeadline": {
+    "phrase1Before": "Каждый",
+    "phrase1Accent": "кадр",
+    "phrase1After": "",
+    "phrase2Before": "от",
+    "phrase2Accent": "каждого",
+    "phrase2After": "гостя",
+    "phrase3Before": "в",
+    "phrase3Accent": "одном",
+    "phrase3After": "альбоме"
+  },
   "how": {
     "title": "Как это работает",
     "step1Title": "Создаём событие",

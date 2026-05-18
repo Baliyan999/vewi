@@ -21,6 +21,23 @@
     "bullet3": "Video-tabriklar va ovozli xabarlar",
     "bullet4": "Zal proyektorida jonli slayd-shou"
   },
+  "statsPromo": {
+    "prefix": "",
+    "label1": "tagacha kadr har mehmondan",
+    "label2": "soniyalik video-tabrik",
+    "label3": "oygacha arxiv saqlash"
+  },
+  "stickyHeadline": {
+    "phrase1Before": "Har bir",
+    "phrase1Accent": "kadr",
+    "phrase1After": "",
+    "phrase2Before": "har",
+    "phrase2Accent": "mehmondan",
+    "phrase2After": "",
+    "phrase3Before": "bitta",
+    "phrase3Accent": "albomda",
+    "phrase3After": ""
+  },
   "how": {
     "title": "Qanday ishlaydi",
     "step1Title": "Tadbir yaratamiz",

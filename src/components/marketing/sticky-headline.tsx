@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   motion,
   useScroll,
@@ -30,15 +31,23 @@ import { FloatingOrnaments } from "./parallax";
  */
 
 type Visual = "single" | "fan" | "grid";
-type Phrase = { before: string; accent: string; after?: string; visual: Visual };
+type Phrase = { before: string; accent: string; after: string; visual: Visual };
 
-const PHRASES: readonly Phrase[] = [
-  { before: "Каждый", accent: "кадр", visual: "single" },
-  { before: "от", accent: "каждого", after: "гостя", visual: "fan" },
-  { before: "в", accent: "одном", after: "альбоме", visual: "grid" },
-] as const;
+// Visual layouts are paired by index with the i18n phrase keys
+// (stickyHeadline.phrase1Before/Accent/After, phrase2Before/..., etc.).
+// Text comes from useTranslations so ru/uz can supply different word
+// breakdowns (e.g. Russian "от каждого гостя" → 3 segments; Uzbek
+// equivalent might be only 2).
+const PHRASE_VISUALS: readonly Visual[] = ["single", "fan", "grid"] as const;
 
 export function StickyHeadline() {
+  const t = useTranslations("stickyHeadline");
+  const phrases: readonly Phrase[] = PHRASE_VISUALS.map((visual, i) => ({
+    before: t(`phrase${i + 1}Before` as "phrase1Before"),
+    accent: t(`phrase${i + 1}Accent` as "phrase1Accent"),
+    after: t(`phrase${i + 1}After` as "phrase1After"),
+    visual,
+  }));
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -65,11 +74,11 @@ export function StickyHeadline() {
           {/* All three phrases share one stage. Each is absolute inset-0
               inside this wrapper so they stack on top of each other —
               only one is opaque at a time per scroll progress. */}
-          {PHRASES.map((p, i) => (
+          {phrases.map((p, i) => (
             <PhraseLayer
               key={i}
               index={i}
-              total={PHRASES.length}
+              total={phrases.length}
               progress={scrollYProgress}
               reduce={reduce ?? false}
               phrase={p}

@@ -172,57 +172,42 @@ function ParallaxTile({
   emoji: string;
   reduce: boolean;
 }) {
-  // Per-tile staggered scroll entrance. Each tile gets a 0.18-wide window
-  // beginning at index/total * 0.5 — the first half of the scroll budget
-  // is reserved for entrance, the rest is for the drift parallax.
-  const enterStart = (index / total) * 0.45;
-  const enterEnd = enterStart + 0.22;
-
-  // Continuous Y drift across the whole section lifecycle.
+  // Continuous Y drift + rotate sway across the whole section lifecycle.
   const y = useTransform(progress, [0, 1], [0, tile.drift]);
-
-  // Subtle rotate sway during scroll.
   const rotate = useTransform(progress, [0, 1], [tile.rot - 2, tile.rot + 2]);
 
-  // 3D entrance — rotateY pivots from sideways to flat, translateZ from
-  // far back to neutral, opacity 0→1. Direction alternates per tile so
-  // they don't all enter from the same side.
+  // 3D entry direction alternates per tile so they don't all flip the
+  // same way. Used as the initial state of whileInView below.
   const flipFromLeft = index % 2 === 0;
-  const enterRotateY = useTransform(
-    progress,
-    [enterStart, enterEnd],
-    [flipFromLeft ? 45 : -45, 0],
-  );
-  const enterTranslateZ = useTransform(
-    progress,
-    [enterStart, enterEnd],
-    [-200, 0],
-  );
-  const enterOpacity = useTransform(
-    progress,
-    [enterStart, enterStart + 0.05, enterEnd],
-    [0, 0.3, 1],
-  );
 
-  // Hover-variant trick: detect hover on the OUTER motion.div (whose
-  // bounding box stays exactly the same during the interaction, because
-  // its only transforms are scroll-driven, not hover-driven), then
-  // propagate "hover" via variants down to the inner element which does
-  // the visual lift. If we put whileHover on the inner motion.div, its
-  // transform (y: -8, scale: 1.08) would push it out from under the
-  // cursor — hover ends, transform reverts, cursor re-enters, hover
-  // restarts, and you get a jitter loop. Detecting on the outer breaks
-  // the feedback because the outer never moves on hover.
+  // whileInView entrance instead of scroll-driven so jump-scrolling
+  // directly to this section doesn't leave tiles invisible while
+  // useScroll waits to measure. amount:0.05 fires almost immediately,
+  // and once:true keeps it from re-running on subsequent scroll.
   const tiltOnHover = tile.rot < 0 ? 1 : -1;
+  const enterVariants = {
+    hidden: {
+      opacity: 0,
+      rotateY: flipFromLeft ? 45 : -45,
+      z: -200,
+    },
+    visible: {
+      opacity: 1,
+      rotateY: 0,
+      z: 0,
+      transition: {
+        duration: 0.9,
+        delay: reduce ? 0 : index * 0.08,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  };
 
   return (
     <motion.div
       style={{
         y: reduce ? 0 : y,
         rotate: reduce ? 0 : rotate,
-        rotateY: reduce ? 0 : enterRotateY,
-        z: reduce ? 0 : enterTranslateZ,
-        opacity: reduce ? 1 : enterOpacity,
         left: `${tile.x}%`,
         top: `${tile.y}%`,
         width: `${tile.w}%`,
@@ -230,18 +215,19 @@ function ParallaxTile({
         transformStyle: "preserve-3d",
       }}
       className="absolute"
+      variants={enterVariants}
+      initial={reduce ? "visible" : "hidden"}
+      whileInView="visible"
       whileHover="hover"
-      initial="rest"
-      animate="rest"
+      viewport={{ once: true, amount: 0.05, margin: "0px 0px -10% 0px" }}
     >
       <motion.div
+        // Only the "hover" variant; baseline (no hover) uses the inline
+        // style below. Removed the "rest" variant because the parent now
+        // uses hidden/visible variant names for entrance — "rest" would
+        // never be triggered anyway. When parent unhovers, motion
+        // animates back to the inline style baseline.
         variants={{
-          rest: {
-            scale: 1,
-            y: 0,
-            rotate: 0,
-            boxShadow: "var(--shadow-soft)",
-          },
           hover: {
             scale: 1.08,
             y: -8,
@@ -253,6 +239,7 @@ function ParallaxTile({
         className="group relative h-full w-full overflow-hidden rounded-(--radius-md) bg-white p-2"
         style={{
           border: "1px solid oklch(94% 0.015 70)",
+          boxShadow: "var(--shadow-soft)",
         }}
       >
         {/* Inner "photo" area — gradient fill with a faint diagonal sheen */}

@@ -149,40 +149,43 @@ function Step({
   progress: MotionValue<number>;
   reduce: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: stepProgress } = useScroll({
-    target: ref,
-    // Wider, earlier window — the step becomes fully readable while it's
-    // still in the bottom third of the viewport. Anything past that and we
-    // never want to see it half-composed when the user pauses mid-scroll.
-    offset: ["start 110%", "start 85%"],
-  });
-
   const isOdd = index % 2 === 1;
   const fromX = isOdd ? 60 : -60;
   const fromRotate = isOdd ? 2 : -2;
 
-  const x = useTransform(stepProgress, [0, 1], [fromX, 0]);
-  // Opacity ramps up fast — by 30% progress the step is already solid,
-  // so it never sits at "half-faded" for more than a flicker.
-  const opacity = useTransform(stepProgress, [0, 0.3, 1], [0, 1, 1]);
-  const scale = useTransform(stepProgress, [0, 1], [0.92, 1]);
-  const rotate = useTransform(stepProgress, [0, 1], [fromRotate, 0]);
-  // No blur — it makes paused/mid-scroll states look like a rendering bug.
+  // whileInView entrance instead of useScroll — when the user jump-
+  // scrolls directly into the section, useScroll defaults its motion
+  // value to 0 for one frame, which made the step invisible (opacity
+  // 0) until measurement caught up. whileInView fires the moment any
+  // part of the step is in viewport (amount: 0.05), so jump-scrollers
+  // see the animation play immediately rather than catching a "blank"
+  // pre-measurement frame.
+  const enterVariants = {
+    hidden: {
+      opacity: 0,
+      x: fromX,
+      scale: 0.92,
+      rotate: fromRotate,
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      rotate: 0,
+      transition: {
+        duration: 0.8,
+        delay: reduce ? 0 : index * 0.12,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  };
 
   return (
     <motion.div
-      ref={ref}
-      style={
-        reduce
-          ? undefined
-          : {
-              x,
-              opacity,
-              scale,
-              rotate,
-            }
-      }
+      variants={enterVariants}
+      initial={reduce ? "visible" : "hidden"}
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.05, margin: "0px 0px -5% 0px" }}
     >
       <MouseTilt intensity={4} perspective={1200}>
         {/* No padding on the row — that was shifting the badge off the

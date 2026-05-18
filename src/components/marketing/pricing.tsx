@@ -18,15 +18,16 @@ type Tier = {
   luxe?: boolean;
 };
 
-// All cards share the same min-height — sized to fit the tallest
-// tier (Luxury with 7 detailed features). Visual hierarchy still
-// comes from the highlighted/luxe styling and the "Popular" /
-// "Эксклюзив" badges, but the card silhouettes line up cleanly.
+// All cards same height + same parallax drift = 0 → tops and bottoms
+// line up exactly across the row. Drift was previously per-tier (some
+// negative, lifting Pro/Luxury upward as the user scrolled past) which
+// caused the cards to appear at different Y positions even though
+// their box heights were identical.
 const TIERS: readonly Tier[] = [
-  { key: "basic",   featureCount: 5, drift: 0.04,  minH: 43 },
-  { key: "pro",     featureCount: 7, highlighted: true, drift: -0.05, minH: 43 },
-  { key: "premium", featureCount: 6, drift: 0.04,  minH: 43 },
-  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, minH: 43 },
+  { key: "basic",   featureCount: 5, drift: 0, minH: 43 },
+  { key: "pro",     featureCount: 7, highlighted: true, drift: 0, minH: 43 },
+  { key: "premium", featureCount: 6, drift: 0, minH: 43 },
+  { key: "luxury",  featureCount: 7, drift: 0, luxe: true, minH: 43 },
 ] as const;
 
 export function Pricing() {

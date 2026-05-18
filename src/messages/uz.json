@@ -146,11 +146,13 @@
     "name": "Ismingiz",
     "phone": "Telefon",
     "weddingDate": "To'y sanasi",
+    "dateFormat": "KK.OO.YYYY",
     "guests": "Taxminiy mehmonlar soni",
     "submit": "Yuborish",
     "submitting": "Yuborilmoqda…",
     "successTitle": "Rahmat!",
-    "successDesc": "Bir soat ichida Telegram/WhatsApp orqali bog'lanamiz."
+    "successDesc": "Bir soat ichida Telegram/WhatsApp orqali bog'lanamiz.",
+    "contactNote": "Bir soat ichida Telegram / WhatsApp orqali aloqa"
   },
   "footer": {
     "tagline": "To'ydagi barcha suratlar — bir joyda",

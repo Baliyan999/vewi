@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Reveal } from "./reveal";
@@ -38,7 +38,7 @@ export function LeadForm() {
   return (
     <Reveal className="mx-auto max-w-xl">
       <div
-        className="surface-card relative overflow-hidden rounded-(--radius-xl) p-8 md:p-12"
+        className="surface-card relative overflow-hidden rounded-(--radius-xl) p-6 sm:p-8 md:p-12"
       >
         <div
           aria-hidden
@@ -82,11 +82,7 @@ export function LeadForm() {
               className="relative flex flex-col gap-5"
             >
               <div className="text-center">
-                <div className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full bg-(--color-accent)/50 px-3.5 py-1 text-xs uppercase tracking-[0.2em] text-(--color-primary)">
-                  <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  Без обязательств
-                </div>
-                <h3 className="text-3xl md:text-4xl">{t("title")}</h3>
+                <h3 className="heading-display-md">{t("title")}</h3>
                 <p className="mt-2 text-sm text-(--color-muted-foreground)">
                   {t("subtitle")}
                 </p>
@@ -117,7 +113,26 @@ export function LeadForm() {
                   <label htmlFor="wedding_date" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
                     {t("weddingDate")}
                   </label>
-                  <Input id="wedding_date" name="wedding_date" type="date" className="bg-white" />
+                  {/* Native <input type="date"> shows a browser-locale
+                      placeholder ("дд.мм.гггг" in RU Chrome regardless
+                      of page lang). The text-on-focus-to-date trick:
+                      start as type=text with our own localised
+                      placeholder; switch to type=date when focused so
+                      the native picker appears; back to type=text on
+                      blur if empty. */}
+                  <Input
+                    id="wedding_date"
+                    name="wedding_date"
+                    type="text"
+                    placeholder={t("dateFormat")}
+                    onFocus={(e) => {
+                      e.currentTarget.type = "date";
+                    }}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.value) e.currentTarget.type = "text";
+                    }}
+                    className="bg-white"
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="guests" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
@@ -139,7 +154,7 @@ export function LeadForm() {
                 {pending ? t("submitting") : t("submit")}
               </Button>
               <p className="text-center text-[11px] text-(--color-muted-foreground)">
-                Связь через Telegram / WhatsApp в течение часа
+                {t("contactNote")}
               </p>
             </motion.form>
           )}

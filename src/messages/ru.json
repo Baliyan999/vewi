@@ -146,11 +146,13 @@
     "name": "Ваше имя",
     "phone": "Телефон",
     "weddingDate": "Дата свадьбы",
+    "dateFormat": "ДД.ММ.ГГГГ",
     "guests": "Примерное количество гостей",
     "submit": "Отправить",
     "submitting": "Отправляем…",
     "successTitle": "Спасибо!",
-    "successDesc": "Мы свяжемся с вами в Telegram/WhatsApp в течение часа."
+    "successDesc": "Мы свяжемся с вами в Telegram/WhatsApp в течение часа.",
+    "contactNote": "Связь через Telegram / WhatsApp в течение часа"
   },
   "footer": {
     "tagline": "Все фото свадьбы — в одном месте",

@@ -65,21 +65,23 @@
     "pro": {
       "name": "Pro",
       "price": "790 000",
-      "f1": "150 mehmongacha",
-      "f2": "30 surat + 5 video-klip",
-      "f3": "30 kun saqlash",
-      "f4": "Jonli slayd-shou",
-      "f5": "Tadbir brendlash",
-      "f6": "Telegram-bot"
+      "f1": "Basicdagi hammasi",
+      "f2": "150 mehmongacha",
+      "f3": "30 surat + 5 video-klip",
+      "f4": "30 kun saqlash",
+      "f5": "Jonli slayd-shou",
+      "f6": "Tadbir brendlash",
+      "f7": "Telegram-bot"
     },
     "premium": {
       "name": "Premium",
       "price": "1 990 000",
-      "f1": "300 mehmongacha",
-      "f2": "Har birida 50 surat + 15 video",
-      "f3": "6 oy saqlash",
-      "f4": "Maxsus domen",
-      "f5": "Google Drive'ga eksport"
+      "f1": "Pro'dagi hammasi",
+      "f2": "300 mehmongacha",
+      "f3": "Har birida 50 surat + 15 video",
+      "f4": "6 oy saqlash",
+      "f5": "Maxsus domen",
+      "f6": "Google Drive'ga eksport"
     },
     "luxury": {
       "name": "Luxury",

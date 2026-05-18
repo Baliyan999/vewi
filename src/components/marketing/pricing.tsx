@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 // rem units, applied via inline style.
 const TIERS = [
   { key: "basic",   featureCount: 5, drift: 0.04,  minH: 28 },
-  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, minH: 33 },
-  { key: "premium", featureCount: 5, drift: 0.04,  minH: 38 },
+  { key: "pro",     featureCount: 7, highlighted: true, drift: -0.05, minH: 33 },
+  { key: "premium", featureCount: 6, drift: 0.04,  minH: 38 },
   { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, minH: 43 },
 ] as const;
 

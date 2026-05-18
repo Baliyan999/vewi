@@ -217,24 +217,24 @@ function GuestStepper({
         // Hide native spinners — Firefox uses appearance:textfield,
         // WebKit uses ::-webkit-{inner,outer}-spin-button. The arbitrary
         // values below cover both.
-        className="bg-white pr-10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="bg-white pr-8 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
-      <div className="pointer-events-none absolute inset-y-1 right-1 flex w-7 flex-col gap-0.5">
+      <div className="pointer-events-none absolute inset-y-2 right-2 flex w-5 flex-col">
         <button
           type="button"
           aria-label="+1"
           onClick={() => bump(1)}
-          className="pointer-events-auto flex flex-1 items-center justify-center rounded-md bg-(--color-accent)/60 text-(--color-primary) transition-colors hover:bg-(--color-accent) hover:text-(--color-foreground)"
+          className="pointer-events-auto flex flex-1 items-center justify-center rounded-t-sm text-(--color-muted-foreground) transition-colors hover:bg-(--color-accent)/50 hover:text-(--color-primary)"
         >
-          <ChevronUp className="h-3.5 w-3.5" strokeWidth={2} />
+          <ChevronUp className="h-3 w-3" strokeWidth={2} />
         </button>
         <button
           type="button"
           aria-label="-1"
           onClick={() => bump(-1)}
-          className="pointer-events-auto flex flex-1 items-center justify-center rounded-md bg-(--color-accent)/60 text-(--color-primary) transition-colors hover:bg-(--color-accent) hover:text-(--color-foreground)"
+          className="pointer-events-auto flex flex-1 items-center justify-center rounded-b-sm text-(--color-muted-foreground) transition-colors hover:bg-(--color-accent)/50 hover:text-(--color-primary)"
         >
-          <ChevronDown className="h-3.5 w-3.5" strokeWidth={2} />
+          <ChevronDown className="h-3 w-3" strokeWidth={2} />
         </button>
       </div>
     </div>

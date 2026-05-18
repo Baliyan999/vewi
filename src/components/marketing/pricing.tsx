@@ -282,12 +282,16 @@ function TierCard({ tier }: { tier: Tier }) {
             href="#lead"
             className={cn(
               "mt-5 md:mt-7",
+              // Basic / Premium now use the "secondary" variant —
+              // champagne bg + dark warm text. Was "outline" which
+              // looked white-on-white against the white-ish cards.
               !isLuxe &&
                 buttonVariants({
-                  variant: isHighlight ? "default" : "outline",
+                  variant: isHighlight ? "default" : "secondary",
                   size: "lg",
                 }),
               isHighlight && "shadow-(--shadow-soft)",
+              !isHighlight && !isLuxe && "shadow-(--shadow-soft)",
               isLuxe &&
                 "inline-flex h-11 items-center justify-center rounded-md px-8 text-sm font-medium shadow-(--shadow-soft) transition-all hover:opacity-90",
             )}

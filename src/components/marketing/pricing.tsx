@@ -8,16 +8,15 @@ import { Reveal, Stagger, StaggerItem } from "./reveal";
 import { FloatingOrnaments, ParallaxY } from "./parallax";
 import { cn } from "@/lib/utils";
 
-// Each tier sits visually higher than the previous one — Basic at the
-// baseline, Luxury at the top — forming a staircase that telegraphs
-// "bigger tier = bigger card". liftPx lifts the card via translateY,
-// scale subtly grows the card size, padScale bumps internal padding
-// so the higher tiers don't just sit higher, they're physically larger.
+// Staircase descends left → right: Basic floats highest above the
+// baseline, Luxury sits at the floor as the visual anchor. Scale
+// still grows toward Luxury so the descending staircase ends with
+// the biggest card — the eye lands on the premium option last.
 const TIERS = [
-  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 0,  scale: 0.94, padScale: 0.85 },
-  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 24, scale: 0.98, padScale: 0.95 },
-  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 48, scale: 1.02, padScale: 1.05 },
-  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 72, scale: 1.08, padScale: 1.15 },
+  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 72, scale: 0.94, padScale: 0.85 },
+  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 48, scale: 0.98, padScale: 0.95 },
+  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 24, scale: 1.02, padScale: 1.05 },
+  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 0,  scale: 1.08, padScale: 1.15 },
 ] as const;
 
 export function Pricing() {
@@ -70,12 +69,12 @@ export function Pricing() {
             return (
               <StaggerItem key={tier.key}>
                 <ParallaxY strength={tier.drift}>
-                  {/* Staircase wrapper — translateY pushes each card
-                      progressively higher (Basic=0, Luxury=-72px), and
-                      scale grows slightly toward Luxury so higher tiers
-                      read as both bigger and elevated. transform-origin
-                      pinned to bottom-center so they "step up" from a
-                      shared floor. */}
+                  {/* Staircase wrapper — Basic floats highest above
+                      the baseline (-72px), each next tier steps DOWN
+                      toward the floor where Luxury sits flush (0px).
+                      Scale still grows toward Luxury so the descending
+                      step ends with the biggest, most anchored card —
+                      the eye lands on the premium option last. */}
                   <div
                     className="origin-bottom transition-transform"
                     style={{

@@ -291,32 +291,37 @@
 @utility animate-particle-rise { animation: particle-rise linear infinite; }
 
 /* react-day-picker brand override — repaints the calendar popup
- * with the Memour rose-gold palette. The library exposes its own CSS
- * variables on .rdp-root which we override under the .rdp-memour
- * scope used in <DatePicker />. */
+ * with the Memour rose-gold palette + a compact grid that fits
+ * inside the lead form without overlapping the submit button. */
 .rdp-memour {
   --rdp-accent-color: var(--color-primary);
   --rdp-accent-background-color: oklch(58% 0.09 35 / 0.12);
   --rdp-background-color: transparent;
-  --rdp-day-height: 2.25rem;
-  --rdp-day-width: 2.25rem;
-  --rdp-day-font: 0.85rem var(--font-sans);
+  --rdp-day-height: 1.75rem;
+  --rdp-day-width: 1.75rem;
+  --rdp-day-font: 0.78rem var(--font-sans);
   --rdp-weekday-text-color: oklch(45% 0.025 50);
+  --rdp-weekday-padding: 0.25rem 0;
+  --rdp-weekday-font: 0.7rem var(--font-sans);
   --rdp-today-color: var(--color-primary);
   --rdp-selected-color: var(--color-primary-foreground);
   --rdp-selected-border: 1px solid var(--color-primary);
   --rdp-disabled-opacity: 0.35;
+  --rdp-nav_button-height: 1.75rem;
+  --rdp-nav_button-width: 1.75rem;
+  --rdp-months-gap: 0.75rem;
   --rdp-range_middle-background-color: oklch(58% 0.09 35 / 0.08);
   font-family: var(--font-sans);
   color: var(--color-foreground);
 }
 .rdp-memour .rdp-month_caption {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-transform: capitalize;
+  padding: 0 0.25rem;
 }
 .rdp-memour .rdp-day_button {
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .rdp-memour .rdp-day:not(.rdp-disabled) .rdp-day_button:hover {
@@ -328,6 +333,8 @@
 }
 .rdp-memour .rdp-chevron {
   fill: var(--color-primary);
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

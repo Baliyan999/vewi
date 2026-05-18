@@ -156,17 +156,20 @@ function TierCard({ tier }: { tier: Tier }) {
 
       {/* The flipper itself — animated rotateY between 0° (front) and
           180° (back). preserve-3d keeps the back face hidden when not
-          rotated into view. Front face is in normal flow so the
-          wrapper sizes to it; back face is absolute inset-0 to match. */}
+          rotated into view. min-height (NOT h-full) because the parent
+          wrapper has min-height only; a percentage h-full would
+          collapse to content size. The same min-height on the front
+          face means flex-1 inside it can stretch the feature list
+          all the way down to push the CTA to the bottom. */}
       <motion.div
         animate={{ rotateY: flipped ? 180 : 0 }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
         style={{ transformStyle: "preserve-3d" }}
-        className="relative h-full w-full"
+        className="relative w-full lg:[min-height:var(--tier-min-h)]"
       >
         {/* ── FRONT FACE ─────────────────────────────────────────── */}
         <div
-          className={cn(faceClasses, "h-full")}
+          className={cn(faceClasses, "lg:[min-height:var(--tier-min-h)]")}
           style={{ ...faceColor, backfaceVisibility: "hidden" }}
         >
           {/* Background halo for highlight/luxe — must live INSIDE the

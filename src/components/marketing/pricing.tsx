@@ -18,12 +18,14 @@ type Tier = {
   luxe?: boolean;
 };
 
-// Staircase where all cards share the same top edge — minH grows
-// progressively so the bottom edges step DOWN left → right.
+// All cards share the same min-height — sized to fit the tallest
+// tier (Luxury with 7 detailed features). Visual hierarchy still
+// comes from the highlighted/luxe styling and the "Popular" /
+// "Эксклюзив" badges, but the card silhouettes line up cleanly.
 const TIERS: readonly Tier[] = [
-  { key: "basic",   featureCount: 5, drift: 0.04,  minH: 28 },
-  { key: "pro",     featureCount: 7, highlighted: true, drift: -0.05, minH: 33 },
-  { key: "premium", featureCount: 6, drift: 0.04,  minH: 38 },
+  { key: "basic",   featureCount: 5, drift: 0.04,  minH: 43 },
+  { key: "pro",     featureCount: 7, highlighted: true, drift: -0.05, minH: 43 },
+  { key: "premium", featureCount: 6, drift: 0.04,  minH: 43 },
   { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, minH: 43 },
 ] as const;
 

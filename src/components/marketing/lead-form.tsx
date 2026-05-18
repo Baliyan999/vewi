@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart } from "lucide-react";
+import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Reveal } from "./reveal";
@@ -138,7 +138,7 @@ export function LeadForm() {
                   <label htmlFor="guests" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
                     {t("guests")}
                   </label>
-                  <Input id="guests" name="guests" type="number" min={10} max={1000} className="bg-white" />
+                  <GuestStepper id="guests" name="guests" min={10} max={1000} />
                 </div>
               </div>
               {error && (
@@ -161,5 +161,82 @@ export function LeadForm() {
         </AnimatePresence>
       </div>
     </Reveal>
+  );
+}
+
+/**
+ * GuestStepper — replaces the native <input type=number> spinner with
+ * brand-styled +/- buttons stacked on the right edge. Hides the native
+ * spinners via Tailwind arbitrary CSS for both WebKit and Firefox.
+ *
+ * Uses an uncontrolled ref to the underlying input so the existing
+ * FormData-based submit handler keeps reading the value via the input's
+ * `name`. We don't React-control the value, the buttons just dispatch
+ * synthetic input events to keep React state and DOM in sync.
+ */
+function GuestStepper({
+  id,
+  name,
+  min,
+  max,
+  step = 1,
+}: {
+  id: string;
+  name: string;
+  min: number;
+  max: number;
+  step?: number;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+
+  function bump(direction: 1 | -1) {
+    const el = ref.current;
+    if (!el) return;
+    const current = Number(el.value || "");
+    const next = Number.isFinite(current)
+      ? current + direction * step
+      : direction === 1
+        ? min
+        : max;
+    const clamped = Math.min(max, Math.max(min, next));
+    // Setting el.value directly bypasses React's synthetic event chain.
+    // For uncontrolled inputs that's fine — FormData reads the DOM value.
+    el.value = String(clamped);
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        ref={ref}
+        id={id}
+        name={name}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        // Hide native spinners — Firefox uses appearance:textfield,
+        // WebKit uses ::-webkit-{inner,outer}-spin-button. The arbitrary
+        // values below cover both.
+        className="bg-white pr-10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <div className="pointer-events-none absolute inset-y-1 right-1 flex w-7 flex-col gap-0.5">
+        <button
+          type="button"
+          aria-label="+1"
+          onClick={() => bump(1)}
+          className="pointer-events-auto flex flex-1 items-center justify-center rounded-md bg-(--color-accent)/60 text-(--color-primary) transition-colors hover:bg-(--color-accent) hover:text-(--color-foreground)"
+        >
+          <ChevronUp className="h-3.5 w-3.5" strokeWidth={2} />
+        </button>
+        <button
+          type="button"
+          aria-label="-1"
+          onClick={() => bump(-1)}
+          className="pointer-events-auto flex flex-1 items-center justify-center rounded-md bg-(--color-accent)/60 text-(--color-primary) transition-colors hover:bg-(--color-accent) hover:text-(--color-foreground)"
+        >
+          <ChevronDown className="h-3.5 w-3.5" strokeWidth={2} />
+        </button>
+      </div>
+    </div>
   );
 }

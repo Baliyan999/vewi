@@ -17,7 +17,7 @@
     "ctaPrimary": "Ariza qoldirish",
     "ctaSecondary": "Qanday ishlaydi",
     "bullet1": "Ilova o'rnatish kerak emas — brauzerda ochiladi",
-    "bullet2": "250 gacha mehmon, har biridan 30 tagacha surat",
+    "bullet2": "500 gacha mehmon, har biridan 50 tagacha surat",
     "bullet3": "Video-tabriklar va ovozli xabarlar",
     "bullet4": "Zal proyektorida jonli slayd-shou"
   },
@@ -56,7 +56,7 @@
     "basic": {
       "name": "Basic",
       "price": "390 000",
-      "f1": "100 mehmongacha",
+      "f1": "50 mehmongacha",
       "f2": "Har biridan 20 surat",
       "f3": "14 kun saqlash",
       "f4": "ZIP yuklab olish",
@@ -65,7 +65,7 @@
     "pro": {
       "name": "Pro",
       "price": "790 000",
-      "f1": "250 mehmongacha",
+      "f1": "150 mehmongacha",
       "f2": "30 surat + 5 video-klip",
       "f3": "30 kun saqlash",
       "f4": "Jonli slayd-shou",
@@ -75,19 +75,18 @@
     "premium": {
       "name": "Premium",
       "price": "1 990 000",
-      "f1": "500 mehmongacha",
+      "f1": "300 mehmongacha",
       "f2": "Har birida 50 surat + 15 video",
       "f3": "6 oy saqlash",
-      "f4": "AI eng yaxshi kadrlar tanlovi",
-      "f5": "Maxsus domen",
-      "f6": "Google Drive'ga eksport"
+      "f4": "Maxsus domen",
+      "f5": "Google Drive'ga eksport"
     },
     "luxury": {
       "name": "Luxury",
       "price": "2 990 000",
       "f1": "Premiumdagi hammasi",
-      "f2": "To'y kuni shaxsiy konsyerj",
-      "f3": "AI tanlagan top-100 kadr (izohli)",
+      "f2": "500 mehmongacha",
+      "f3": "To'y kuni shaxsiy konsyerj",
       "f4": "Brendlangan USB-flesh pochta orqali",
       "f5": "Bosma foto-albom 50 sahifa",
       "f6": "12 oy saqlash",

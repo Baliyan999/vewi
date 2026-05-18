@@ -22,7 +22,7 @@ export function LeadForm() {
     const data: LeadInput = {
       name: String(fd.get("name") ?? ""),
       phone: String(fd.get("phone") ?? ""),
-      wedding_date: (fd.get("wedding_date") as string) || null,
+      wedding_date: parseLocaleDate(fd.get("wedding_date") as string | null),
       guests_estimate: fd.get("guests")
         ? Number(fd.get("guests"))
         : null,
@@ -113,24 +113,21 @@ export function LeadForm() {
                   <label htmlFor="wedding_date" className="text-xs uppercase tracking-wider text-(--color-muted-foreground)">
                     {t("weddingDate")}
                   </label>
-                  {/* Native <input type="date"> shows a browser-locale
-                      placeholder ("дд.мм.гггг" in RU Chrome regardless
-                      of page lang). The text-on-focus-to-date trick:
-                      start as type=text with our own localised
-                      placeholder; switch to type=date when focused so
-                      the native picker appears; back to type=text on
-                      blur if empty. */}
+                  {/* Plain text input — native <input type="date"> shows
+                      its own browser-locale strings ("дд.мм.гггг" in
+                      RU Chrome) the moment it gets focus, regardless
+                      of page lang. Sticking to text + a localised
+                      placeholder + a regex pattern is the only way to
+                      keep the whole control on our locale. The
+                      pattern allows D.M.YYYY or DD.MM.YYYY. */}
                   <Input
                     id="wedding_date"
                     name="wedding_date"
                     type="text"
+                    inputMode="numeric"
                     placeholder={t("dateFormat")}
-                    onFocus={(e) => {
-                      e.currentTarget.type = "date";
-                    }}
-                    onBlur={(e) => {
-                      if (!e.currentTarget.value) e.currentTarget.type = "text";
-                    }}
+                    pattern="^\d{1,2}\.\d{1,2}\.\d{4}$"
+                    title={t("dateFormat")}
                     className="bg-white"
                   />
                 </div>
@@ -162,6 +159,20 @@ export function LeadForm() {
       </div>
     </Reveal>
   );
+}
+
+/**
+ * Convert the user-typed "ДД.ММ.ГГГГ" (or "Д.М.ГГГГ") date string into
+ * the ISO-8601 YYYY-MM-DD format the back-end expects. Returns null on
+ * empty or malformed input — the back-end already accepts null for an
+ * unknown wedding date, so an unparseable value just falls through.
+ */
+function parseLocaleDate(raw: string | null): string | null {
+  if (!raw) return null;
+  const m = raw.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (!m) return null;
+  const [, d, mo, y] = m;
+  return `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
 /**

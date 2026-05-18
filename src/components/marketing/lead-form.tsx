@@ -39,16 +39,21 @@ export function LeadForm() {
   return (
     <Reveal className="mx-auto max-w-xl">
       <div
-        className="surface-card relative overflow-hidden rounded-(--radius-xl) p-6 sm:p-8 md:p-12"
+        className="surface-card relative rounded-(--radius-xl) p-6 sm:p-8 md:p-12"
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-(--color-rose)/30 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-12 -bottom-16 h-56 w-56 rounded-full bg-(--color-champagne)/40 blur-3xl"
-        />
+        {/* Decorative orbs in their own overflow-hidden layer so the
+            calendar popup can escape the card bounds without being
+            clipped. The form card itself is overflow-visible. */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-(--radius-xl)">
+          <div
+            aria-hidden
+            className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-(--color-rose)/30 blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="absolute -left-12 -bottom-16 h-56 w-56 rounded-full bg-(--color-champagne)/40 blur-3xl"
+          />
+        </div>
 
         <AnimatePresence mode="wait">
           {success ? (

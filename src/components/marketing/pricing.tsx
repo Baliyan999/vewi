@@ -8,16 +8,17 @@ import { Reveal, Stagger, StaggerItem } from "./reveal";
 import { FloatingOrnaments, ParallaxY } from "./parallax";
 import { cn } from "@/lib/utils";
 
-// Clean descending staircase: each card steps DOWN by an exact 40px
-// from the previous one. All cards share the same scale + min-height
-// so the steps read evenly — scale variation was making the spacing
-// look uneven because Luxury at 1.08× was both taller AND wider than
-// Basic at 0.94×, overriding the lift offset visually.
+// Staircase where all cards share the SAME top edge, but each tier
+// is taller than the previous — the bottom edge steps down by ~3rem
+// per tier. Visual result: Basic the shortest card on the left,
+// Luxury the tallest on the right, all aligned at the top so they
+// "grow downward" left → right. minH is the lg-only min-height in
+// rem units, applied via inline style.
 const TIERS = [
-  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 0 },
-  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 40 },
-  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 80 },
-  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 120 },
+  { key: "basic",   featureCount: 5, drift: 0.04,  minH: 28 },
+  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, minH: 33 },
+  { key: "premium", featureCount: 6, drift: 0.04,  minH: 38 },
+  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, minH: 43 },
 ] as const;
 
 export function Pricing() {
@@ -69,30 +70,24 @@ export function Pricing() {
             return (
               <StaggerItem key={tier.key}>
                 <ParallaxY strength={tier.drift}>
-                  {/* Staircase wrapper — pushes the card DOWN by
-                      tier.liftPx (0 / 40 / 80 / 120). Combined with
-                      a uniform min-height on the card itself, the
-                      result is a clean descending top-edge staircase
-                      where every step is exactly 40px. Only applies
-                      on lg+ where the grid is 4-column; the wrapper
-                      is a no-op below that. */}
-                  <div
-                    className="lg:transition-transform"
-                    style={{
-                      transform: `translateY(var(--lift, 0))`,
-                      ["--lift" as string]: `${tier.liftPx}px`,
-                    }}
-                  >
+                  {/* No translateY wrapper any more — the staircase is
+                      now created by giving each card a different
+                      lg:min-height (28 / 33 / 38 / 43 rem). With the
+                      grid's items-start, all tops align and the bottoms
+                      step down. */}
                   <motion.div
                     whileHover={isHighlight || isLuxe ? { y: -6 } : { y: -3 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
+                    style={
+                      {
+                        "--tier-min-h": `${tier.minH}rem`,
+                      } as React.CSSProperties
+                    }
                     className={cn(
-                      // Uniform min-h on lg+ — all four cards report the
-                      // same content height to layout, so the visual
-                      // staircase from translateY reads as equal 40px
-                      // steps without per-card height variance polluting
-                      // the rhythm.
-                      "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7 lg:min-h-[36rem]",
+                      // lg:[min-height:var(--tier-min-h)] applies the
+                      // tier-specific min-height only at lg+ so on
+                      // narrower viewports cards size to their content.
+                      "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7 lg:[min-height:var(--tier-min-h)]",
                       isHighlight &&
                         "border border-(--color-primary)/40 shadow-(--shadow-glow)",
                       isLuxe &&
@@ -250,7 +245,6 @@ export function Pricing() {
                       {t("ctaSelect")}
                     </a>
                   </motion.div>
-                  </div>
                 </ParallaxY>
               </StaggerItem>
             );

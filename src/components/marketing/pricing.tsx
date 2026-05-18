@@ -8,15 +8,16 @@ import { Reveal, Stagger, StaggerItem } from "./reveal";
 import { FloatingOrnaments, ParallaxY } from "./parallax";
 import { cn } from "@/lib/utils";
 
-// Staircase descends left → right: Basic floats highest above the
-// baseline, Luxury sits at the floor as the visual anchor. Scale
-// still grows toward Luxury so the descending staircase ends with
-// the biggest card — the eye lands on the premium option last.
+// Clean descending staircase: each card steps DOWN by an exact 40px
+// from the previous one. All cards share the same scale + min-height
+// so the steps read evenly — scale variation was making the spacing
+// look uneven because Luxury at 1.08× was both taller AND wider than
+// Basic at 0.94×, overriding the lift offset visually.
 const TIERS = [
-  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 72, scale: 0.94, padScale: 0.85 },
-  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 48, scale: 0.98, padScale: 0.95 },
-  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 24, scale: 1.02, padScale: 1.05 },
-  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 0,  scale: 1.08, padScale: 1.15 },
+  { key: "basic",   featureCount: 5, drift: 0.04,  liftPx: 0 },
+  { key: "pro",     featureCount: 6, highlighted: true, drift: -0.05, liftPx: 40 },
+  { key: "premium", featureCount: 6, drift: 0.04,  liftPx: 80 },
+  { key: "luxury",  featureCount: 7, drift: -0.04, luxe: true, liftPx: 120 },
 ] as const;
 
 export function Pricing() {
@@ -55,12 +56,11 @@ export function Pricing() {
         </Reveal>
 
         <Stagger
-          // items-end on lg+ bottom-aligns the cards so the per-tier
-          // translateY lift creates a clean staircase silhouette: Basic
-          // at the floor, each successive card stepping up. On smaller
-          // viewports (sm/md) we keep items-start because the
-          // 2-column grid doesn't have horizontal room for a staircase.
-          className="mt-6 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-10 md:gap-6 lg:grid-cols-4 lg:items-end lg:gap-3"
+          // items-start so each card hangs from its own translateY
+          // offset, producing a clean top-edge staircase that steps
+          // DOWN by 40px per tier. On smaller viewports (2-column)
+          // the staircase is disabled (translateY only applied at lg+).
+          className="mt-6 grid items-start gap-4 sm:grid-cols-2 sm:gap-5 md:mt-10 md:gap-6 lg:grid-cols-4 lg:gap-5"
           step={0.1}
         >
           {TIERS.map((tier) => {
@@ -69,24 +69,30 @@ export function Pricing() {
             return (
               <StaggerItem key={tier.key}>
                 <ParallaxY strength={tier.drift}>
-                  {/* Staircase wrapper — Basic floats highest above
-                      the baseline (-72px), each next tier steps DOWN
-                      toward the floor where Luxury sits flush (0px).
-                      Scale still grows toward Luxury so the descending
-                      step ends with the biggest, most anchored card —
-                      the eye lands on the premium option last. */}
+                  {/* Staircase wrapper — pushes the card DOWN by
+                      tier.liftPx (0 / 40 / 80 / 120). Combined with
+                      a uniform min-height on the card itself, the
+                      result is a clean descending top-edge staircase
+                      where every step is exactly 40px. Only applies
+                      on lg+ where the grid is 4-column; the wrapper
+                      is a no-op below that. */}
                   <div
-                    className="origin-bottom transition-transform"
+                    className="lg:transition-transform"
                     style={{
-                      transform: `translateY(${-tier.liftPx}px) scale(${tier.scale})`,
-                      transformOrigin: "bottom center",
+                      transform: `translateY(var(--lift, 0))`,
+                      ["--lift" as string]: `${tier.liftPx}px`,
                     }}
                   >
                   <motion.div
                     whileHover={isHighlight || isLuxe ? { y: -6 } : { y: -3 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
                     className={cn(
-                      "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7",
+                      // Uniform min-h on lg+ — all four cards report the
+                      // same content height to layout, so the visual
+                      // staircase from translateY reads as equal 40px
+                      // steps without per-card height variance polluting
+                      // the rhythm.
+                      "relative flex h-full flex-col rounded-(--radius-xl) p-5 sm:p-6 md:p-7 lg:min-h-[36rem]",
                       isHighlight &&
                         "border border-(--color-primary)/40 shadow-(--shadow-glow)",
                       isLuxe &&
